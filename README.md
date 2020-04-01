@@ -8,6 +8,18 @@ qt没有http服务器实现，使用QtWebApp处理http
 
 可能http和ws需要不同端口
 
+### 依赖
+
+* qt
+
+* qtwebsockets
+
+* qtserial
+
+#### ubuntu
+
+apt-get install qt5-default libqt5websocket libqt5serialport
+
 ### 编译
 
 build.sh
