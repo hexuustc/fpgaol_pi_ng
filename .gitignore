@@ -1,0 +1,8 @@
+# build binary
+build/
+*.o
+*.exe
+*.out
+
+# qt pro user
+*.user

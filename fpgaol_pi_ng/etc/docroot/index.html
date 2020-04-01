@@ -1,0 +1,391 @@
+<!-- fpga/templates/fpga/room.html -->
+<!DOCTYPE html>
+<html>
+
+<head>
+
+
+	<title>FPGA Online</title>
+	<link href="static/css/bootstrap.min.css" rel="stylesheet">
+	<link href="static/css/jquery.terminal.min.css" rel="stylesheet">
+	<link href="static/css/font-awesome.min.css" rel="stylesheet">
+	<link href="static/css/room.css?version=1.0" rel="stylesheet">
+	<script src="static/js/jquery-3.4.1.min.js"></script>
+	<script src="static/js/bootstrap.bundle.min.js"></script>
+	<script src="static/js/jquery.timer.js"></script>
+	<script src="static/js/echarts.min.js"></script>
+	<script src="static/js/jquery.terminal.min.js"></script>
+	<script src="static/js/room.js?version=1.0"></script>
+
+</head>
+
+<body>
+	<div class="container">
+		<h1 align="center">FPGAOL NG DEV PAGE</h1>
+
+	</div>
+	<div class="container">
+
+		<input id="bitstream" name="bitstream" type="file" accept=".bin,.bit" class="form-control-file" hidden="true">
+		<div class="row">
+			<div class="col module">
+					<h4>Bitstream File</h4>
+					<div class="row">
+						<div class="col">
+							<button type="button" id="file-select" class="btn btn-primary">Select file</button>
+						</div>
+						<div class="col">
+							<div class="input-group mb-3">
+								<div class="input-group-prepend">
+									<button class="btn btn-outline-secondary dropdown-toggle" type="button"
+										data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+										disabled>example bitstream</button>
+									<div class="dropdown-menu">
+										<a class="dropdown-item" href="#">switch and led</a>
+										<a class="dropdown-item" href="#">wave</a>
+										<a class="dropdown-item" href="#">hexplay timer</a>
+										<a class="dropdown-item" href="#">uart echo</a>
+										<div role="separator" class="dropdown-divider"></div>
+										<a class="dropdown-item" href="#">more will be availabe</a>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col">
+							<input type="text" id="file-name" readonly="true" class="form-control"
+								placeholder="no file selected">
+						</div>
+						<div class="col">
+							<button type="button" id="upload-button" class="btn btn-primary">Program!</button>
+						</div>
+					</div>
+					</br>
+					<div class="alert alert-info" role="alert" id="filestatus">
+						<span id="responsetext">No Bitstream</span>
+					</div>
+					<div class="progress" id="progress-div">
+						<div class="progress-bar progress-bar-striped bg-success" id="progress" role="progressbar"
+							style="width: 0%"></div>
+					</div>
+					</br>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+		</br>
+	</div>
+	<div class="container module">
+		<h4>FPGA interface</h4>
+		<div class="row">
+			<div class="col-5 colmodule">
+				<div class="container">
+					<span class="fpgalabel" align="center">led7</span>
+					<span class="fpgalabel" align="center">led6</span>
+					<span class="fpgalabel" align="center">led5</span>
+					<span class="fpgalabel" align="center">led4</span>
+					<span class="fpgalabel" align="center">led3</span>
+					<span class="fpgalabel" align="center">led2</span>
+					<span class="fpgalabel" align="center">led1</span>
+					<span class="fpgalabel" align="center">led0</span>
+				</div>
+				<div class="container">
+					<div class="fpgaled"><input type="checkbox" id="led7" disabled><label></label></div>
+					<div class="fpgaled"><input type="checkbox" id="led6" disabled><label></label></div>
+					<div class="fpgaled"><input type="checkbox" id="led5" disabled><label></label></div>
+					<div class="fpgaled"><input type="checkbox" id="led4" disabled><label></label></div>
+					<div class="fpgaled"><input type="checkbox" id="led3" disabled><label></label></div>
+					<div class="fpgaled"><input type="checkbox" id="led2" disabled><label></label></div>
+					<div class="fpgaled"><input type="checkbox" id="led1" disabled><label></label></div>
+					<div class="fpgaled"><input type="checkbox" id="led0" disabled><label></label></div>
+				</div>
+				<div class="container">
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+				</div>
+				<div class="container">
+					<div class="fpgaboard">
+						<span class="fpgalabel" align="center">G18</span>
+						<span class="fpgalabel" align="center">F18</span>
+						<span class="fpgalabel" align="center">E17</span>
+						<span class="fpgalabel" align="center">D17</span>
+						<span class="fpgalabel" align="center">G17</span>
+						<span class="fpgalabel" align="center">E18</span>
+						<span class="fpgalabel" align="center">D18</span>
+						<span class="fpgalabel" align="center">C17</span>
+						</br></br>
+						<sapn>FPGA</sapn>
+						</br>
+						<sapn>XC7A100t-CSG324-1</sapn>
+						</br></br>
+						<span class="fpgalabel" align="center">H16</span>
+						<span class="fpgalabel" align="center">G13</span>
+						<span class="fpgalabel" align="center">F13</span>
+						<span class="fpgalabel" align="center">E16</span>
+						<span class="fpgalabel" align="center">H14</span>
+						<span class="fpgalabel" align="center">G16</span>
+						<span class="fpgalabel" align="center">F16</span>
+						<span class="fpgalabel" align="center">D14</span>
+					</div>
+				</div>
+				<div class="container">
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+					<div class="fpgaline"><label></label></div>
+				</div>
+				<div class="container">
+					<div class="fpgaswitch"><input type="checkbox" id="sw7" /><label></label></div>
+					<div class="fpgaswitch"><input type="checkbox" id="sw6" /><label></label></div>
+					<div class="fpgaswitch"><input type="checkbox" id="sw5" /><label></label></div>
+					<div class="fpgaswitch"><input type="checkbox" id="sw4" /><label></label></div>
+					<div class="fpgaswitch"><input type="checkbox" id="sw3" /><label></label></div>
+					<div class="fpgaswitch"><input type="checkbox" id="sw2" /><label></label></div>
+					<div class="fpgaswitch"><input type="checkbox" id="sw1" /><label></label></div>
+					<div class="fpgaswitch"><input type="checkbox" id="sw0" /><label></label></div>
+				</div>
+				<div class="container">
+					<span class="fpgalabel" align="center">sw7</span>
+					<span class="fpgalabel" align="center">sw6</span>
+					<span class="fpgalabel" align="center">sw5</span>
+					<span class="fpgalabel" align="center">sw4</span>
+					<span class="fpgalabel" align="center">sw3</span>
+					<span class="fpgalabel" align="center">sw2</span>
+					<span class="fpgalabel" align="center">sw1</span>
+					<span class="fpgalabel" align="center">sw0</span>
+				</div>
+			</div>
+			<div class="col-6 colmodule">
+				<h3>uart</h3>
+				<div class="terminal" id="terminal"></div>
+				uart pins:&nbsp;&nbsp;&nbsp;
+				<span class="fpgalabel" align="center">cts</span>
+				<span class="fpgalabel" align="center">rts</span>
+				<span class="fpgalabel" align="center">rxd</span>
+				<span class="fpgalabel" align="center">txd</span>
+				</br>
+				xdc,ucf sym:
+				<span class="fpgalabel" align="center">D3</span>
+				<span class="fpgalabel" align="center">E5</span>
+				<span class="fpgalabel" align="center">D4</span>
+				<span class="fpgalabel" align="center">C4</span>
+				</br>
+				baud rate: 115200
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-6 colmodule">
+				<div class="container">segplay&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hexplay(unavailable)</div>
+				<div class="container">
+					<div class="fpgaseg">
+						<span class="segplay" value="0"></span>
+						<span class="segplay" value="0"></span>
+						<span class="segplay" value="0"></span>
+						<span class="segplay" value="0"></span>
+						<span class="segplay" value="0"></span>
+						<span class="segplay" value="0"></span>
+						<span class="segplay" value="0"></span>
+						<span class="segplay" value="0"></span>
+						<label></label>
+					</div>
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<div class="fpgaseg">
+						<span class="hexplay" id="hex00" value="0"></span>
+						<span class="hexplay" id="hex01" value="0"></span>
+						<span class="hexplay" id="hex02" value="0"></span>
+						<span class="hexplay" id="hex03" value="0"></span>
+						<span class="hexplay" id="hex04" value="0"></span>
+						<span class="hexplay" id="hex05" value="0"></span>
+						<span class="hexplay" id="hex06" value="0"></span>
+						<span class="hexplay" id="hex07" value="0"></span>
+						<label></label>
+					</div>
+					<div class="fpgaseg" id="hexplay">
+						<span class="hexplay" id="hex10" value="0"></span>
+						<span class="hexplay" id="hex11" value="0"></span>
+						<span class="hexplay" id="hex12" value="0"></span>
+						<span class="hexplay" id="hex13" value="0"></span>
+						<span class="hexplay" id="hex14" value="0"></span>
+						<span class="hexplay" id="hex15" value="0"></span>
+						<span class="hexplay" id="hex16" value="0"></span>
+						<span class="hexplay" id="hex17" value="0"></span>
+						<label></label>
+					</div>
+					<div class="fpgaseg" id="hexplay">
+						<span class="hexplay" id="hex20" value="0"></span>
+						<span class="hexplay" id="hex21" value="0"></span>
+						<span class="hexplay" id="hex22" value="0"></span>
+						<span class="hexplay" id="hex23" value="0"></span>
+						<span class="hexplay" id="hex24" value="0"></span>
+						<span class="hexplay" id="hex25" value="0"></span>
+						<span class="hexplay" id="hex26" value="0"></span>
+						<span class="hexplay" id="hex27" value="0"></span>
+						<label></label>
+					</div>
+					<div class="fpgaseg" id="hexplay">
+						<span class="hexplay" id="hex30" value="0"></span>
+						<span class="hexplay" id="hex31" value="0"></span>
+						<span class="hexplay" id="hex32" value="0"></span>
+						<span class="hexplay" id="hex33" value="0"></span>
+						<span class="hexplay" id="hex34" value="0"></span>
+						<span class="hexplay" id="hex35" value="0"></span>
+						<span class="hexplay" id="hex36" value="0"></span>
+						<span class="hexplay" id="hex37" value="0"></span>
+						<label></label>
+					</div>
+				</div>
+				<div class="container">
+					segplay pin:
+					<span class="fpgalabel" align="center">dot</span>
+					<span class="fpgalabel" align="center">seg_g</span>
+					<span class="fpgalabel" align="center">seg_f</span>
+					<span class="fpgalabel" align="center">seg_e</span>
+					<span class="fpgalabel" align="center">seg_d</span>
+					<span class="fpgalabel" align="center">seg_c</span>
+					<span class="fpgalabel" align="center">seg_b</span>
+					<span class="fpgalabel" align="center">seg_a</span>
+				</div>
+				<div class="container">
+					hexplay pin:
+					<span class="fpgalabel" align="center">an3</span>
+					<span class="fpgalabel" align="center">an2</span>
+					<span class="fpgalabel" align="center">an1</span>
+					<span class="fpgalabel" align="center">an0</span>
+					<span class="fpgalabel" align="center">d3</span>
+					<span class="fpgalabel" align="center">d2</span>
+					<span class="fpgalabel" align="center">d1</span>
+					<span class="fpgalabel" align="center">d0</span>
+				</div>
+				<div class="container">
+					xdc,ucf sym:
+					<span class="fpgalabel" align="center">K1</span>
+					<span class="fpgalabel" align="center">F6</span>
+					<span class="fpgalabel" align="center">J2</span>
+					<span class="fpgalabel" align="center">G6</span>
+					<span class="fpgalabel" align="center">E7</span>
+					<span class="fpgalabel" align="center">J3</span>
+					<span class="fpgalabel" align="center">J4</span>
+					<span class="fpgalabel" align="center">E6</span>
+				</div>
+			</div>
+			<div class="col-5 colmodule">
+				<div class="row">
+					<div class="col">
+						<p>soft clock(unavailable)</p>
+						<div class="dropdown">
+							<button class="btn btn-secondary dropdown-toggle" type="button"
+								id="clock0dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
+								aria-expanded="false">
+								None
+							</button>
+							<div class="dropdown-menu" aria-labelledby="clock0dropdownMenuButton">
+								<a class="dropdown-item0 dropdown-item" val="-1" text="None  " id="clock0op">None</a>
+								<a class="dropdown-item0 dropdown-item" val="1" text="1Hz   " id="clock0op">1Hz</a>
+								<a class="dropdown-item0 dropdown-item" val="2" text="1/2Hz " id="clock0op">1/2Hz</a>
+								<a class="dropdown-item0 dropdown-item" val="5" text="1/5Hz " id="clock0op">1/5Hz</a>
+								<a class="dropdown-item0 dropdown-item" val="10" text="1/10Hz" id="clock0op">1/10Hz</a>
+							</div>
+						</div>
+					</div>
+					<div class="col">
+						<p>button(unavailable)</p>
+						<button type="button" class="btn btn-danger fpgabutton" id="fpgabtn"></button>
+					</div>
+				</div>
+				</br>
+				<div class="row">
+					<div class="container">
+						clk btn pins:
+						<span class="fpgalabel" align="center">clk</span>
+						<span class="fpgalabel" align="center">btn</span>
+					</div>
+					<div class="container">
+						xdc,ucf sym:
+						<span class="fpgalabel" align="center">H1</span>
+						<span class="fpgalabel" align="center">H4</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="container">
+		</br>
+	</div>
+	<div class="container module">
+		<h4>Sampling Waveform</h4>
+		<div class="row">
+			<div class="col-3">
+				<div class="form-check form-check-inline">
+					<input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1"
+						value="last" checked>
+					<label class="form-check-label" for="inlineRadio1">last 10 secs</label>
+				</div>
+				<div class="form-check form-check-inline">
+					<input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2"
+						value="period">
+					<label class="form-check-label" for="inlineRadio2">period(Sec)</label>
+				</div>
+			</div>
+			<div class="col">
+				<div class="container">
+					<label for="start-time">Start :</label>
+					<input style="max-width: 100px;" id="start-time" type="number" step="0.2" value="0" min="0">
+					<label for="finish-time">Finish :</label>
+					<input style="max-width: 100px;" id="finish-time" type="number" step="0.2" value="5" min="0">
+				</div>
+			</div>
+			<div class="col">
+				<button type="button" id="view-button" class="btn btn-primary">View</button>
+			</div>
+		</div>
+		<div class="chart-container-container">
+			<div class="chart-container" id="chart-container">
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="timeoutModal" tabindex="-1" role="dialog" aria-labelledby="timeoutModalLabel"
+		aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="timeoutModalLabel">Connection Error</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<p>
+						Connection closed unexpectedly!</br>
+						Perhaps it's a network error or you may be holding FPGA for too long (>10 min).</br>
+						You can leave this page to acquire again or continue using this page(view waveform of a
+						period).</br>
+					</p>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">Ignore</button>
+					<a class="btn btn-primary" href="{% url 'profile' %}">Exit</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class=" debugdiv" hidden="true">
+		<textarea id="notify-log" cols="100" rows="20"></textarea><br />
+		<input type="number" id="gpio" min="0" max="7">
+		<input type="number" id="level" min="0" max="1">
+		<input id="fpgaol-message-submit" type="button" value="Send" />
+		<input type="button" value="stop" id="stop-notify" /><br></br>
+		<textarea id="cmd-log" cols="100" rows="20"></textarea><br />
+	</div>
+</body>
+
+</html>
