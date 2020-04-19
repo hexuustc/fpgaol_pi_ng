@@ -2,7 +2,8 @@
 // global variables
 // FPGAOL_NG_DEV
 var DEBUG_MODE = true;
-var DEBUG_SERVER_ADDRESS = "127.0.0.1:8080";
+var DEBUG_HTTP_SERVER = "127.0.0.1:8080";
+var DEBUG_WS_SERVER = "127.0.0.1:8090";
 var globalTime;
 var myChart;
 var term;
@@ -86,7 +87,7 @@ $(document).ready(function () {
     PI_SERVER_ADDRESS = window.location.host + ':' + '100' + $("#pi").text().substr(2);
     // uart websocket
     if (DEBUG_MODE) {
-        uartSocket = new WebSocket('ws://' + DEBUG_SERVER_ADDRESS + '/uartws/');
+        uartSocket = new WebSocket('ws://' + DEBUG_WS_SERVER + '/uartws/');
     } else {
         uartSocket = new WebSocket('ws://' + PI_SERVER_ADDRESS + '/uartws/');
     }
@@ -98,10 +99,10 @@ $(document).ready(function () {
     // setup websocket
     if (DEBUG_MODE) {
         notifySocket = new WebSocket(
-            'ws://' + DEBUG_SERVER_ADDRESS + '/ws/');
+            'ws://' + DEBUG_WS_SERVER + '/ws/');
     } else {
         notifySocket = new WebSocket(
-            'ws://' + PI_SERVER_ADDRESS + '/ws/');
+            'ws://' + DEBUG_WS_SERVER + '/ws/');
     }
     notifySocket.onmessage = function (e) {
         var data = JSON.parse(e.data);
@@ -224,7 +225,7 @@ $(document).ready(function () {
             }
         };
         if (DEBUG_MODE) {
-            xhr.open("POST", 'http://' + DEBUG_SERVER_ADDRESS + '/upload/');
+            xhr.open("POST", 'http://' + DEBUG_HTTP_SERVER + '/upload/');
         } else {
             xhr.open("POST", 'http://' + PI_SERVER_ADDRESS + '/upload/');
         }
