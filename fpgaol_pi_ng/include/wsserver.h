@@ -31,7 +31,8 @@ private Q_SLOTS:
 
 private:
     QWebSocketServer *m_pWebSocketServer;
-    QList<QWebSocket *> m_clients;
+    QList<QWebSocket *> uart_clients;
+    QList<QWebSocket *> FPGA_clients;
     bool m_debug;
 };
 #endif // WSSERVER_H

@@ -55,7 +55,6 @@ void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResp
                     response.setStatus(500);
                     response.write("upload failed", true);
                 }
-                // TODO(programming code)
                 response.setStatus(200);
                 response.write("Program success!", true);
             }

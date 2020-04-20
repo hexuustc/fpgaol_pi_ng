@@ -23,7 +23,8 @@ wsServer::wsServer(quint16 port, bool debug, QObject *parent) :
 wsServer::~wsServer()
 {
     m_pWebSocketServer->close();
-    qDeleteAll(m_clients.begin(), m_clients.end());
+    qDeleteAll(uart_clients.begin(), uart_clients.end());
+    qDeleteAll(FPGA_clients.begin(), FPGA_clients.end());
 }
 
 void wsServer::onNewConnection()
@@ -37,13 +38,26 @@ void wsServer::onNewConnection()
         connect(pSocket, &QWebSocket::textMessageReceived, this, &wsServer::recvUartMessage);
         connect(pSocket, &QWebSocket::binaryMessageReceived, this, &wsServer::processBinaryMessage);
         connect(pSocket, &QWebSocket::disconnected, this, &wsServer::uartSocketDisconnected);
+        uart_clients << pSocket;
     } else if (req_url.endsWith("/ws/")) {
         qDebug() << "FPGA ws connected";
         connect(pSocket, &QWebSocket::textMessageReceived, this, &wsServer::recvFGPAMessage);
         connect(pSocket, &QWebSocket::binaryMessageReceived, this, &wsServer::processBinaryMessage);
         connect(pSocket, &QWebSocket::disconnected, this, &wsServer::FPGASocketDisconnected);
+        FPGA_clients << pSocket;
     }
-    m_clients << pSocket;
+}
+
+void wsServer::sendFPGAMessage(QString message) {
+    for (QWebSocket *pClinet : FPGA_clients) {
+        pClinet->sendTextMessage(message);
+    }
+}
+
+void wsServer::sendUartMessage(QString message) {
+    for (QWebSocket *pClinet : uart_clients) {
+        pClinet->sendTextMessage(message);
+    }
 }
 
 void wsServer::recvUartMessage(QString message)
@@ -82,7 +96,7 @@ void wsServer::uartSocketDisconnected()
     if (m_debug)
         qDebug() << "uart socketDisconnected:" << pClient;
     if (pClient) {
-        m_clients.removeAll(pClient);
+        uart_clients.removeAll(pClient);
         pClient->deleteLater();
     }
 }
@@ -93,7 +107,7 @@ void wsServer::FPGASocketDisconnected()
     if (m_debug)
         qDebug() << "FPGA socketDisconnected:" << pClient;
     if (pClient) {
-        m_clients.removeAll(pClient);
+        FPGA_clients.removeAll(pClient);
         pClient->deleteLater();
     }
     // endnotify
