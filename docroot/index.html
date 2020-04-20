@@ -185,7 +185,7 @@
 			</div>
 		</div>
 		<div class="row">
-			<div class="col-6 colmodule">
+			<div class="col-8 colmodule">
 				<div class="container">segplay(sharing with led)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;hexplay</div>
 				<div class="container">
 					<div class="fpgaseg">
@@ -199,7 +199,7 @@
 						<span class="segplay" value="0"></span>
 						<label></label>
 					</div>
-					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 					<div class="fpgaseg">
 						<span class="hexplay" id="hex00" value="0"></span>
 						<span class="hexplay" id="hex01" value="0"></span>
@@ -244,6 +244,50 @@
 						<span class="hexplay" id="hex37" value="0"></span>
 						<label></label>
 					</div>
+					<div class="fpgaseg">
+						<span class="hexplay" id="hex40" value="0"></span>
+						<span class="hexplay" id="hex41" value="0"></span>
+						<span class="hexplay" id="hex42" value="0"></span>
+						<span class="hexplay" id="hex43" value="0"></span>
+						<span class="hexplay" id="hex44" value="0"></span>
+						<span class="hexplay" id="hex45" value="0"></span>
+						<span class="hexplay" id="hex46" value="0"></span>
+						<span class="hexplay" id="hex47" value="0"></span>
+						<label></label>
+					</div>
+					<div class="fpgaseg" id="hexplay">
+						<span class="hexplay" id="hex50" value="0"></span>
+						<span class="hexplay" id="hex51" value="0"></span>
+						<span class="hexplay" id="hex52" value="0"></span>
+						<span class="hexplay" id="hex53" value="0"></span>
+						<span class="hexplay" id="hex54" value="0"></span>
+						<span class="hexplay" id="hex55" value="0"></span>
+						<span class="hexplay" id="hex56" value="0"></span>
+						<span class="hexplay" id="hex57" value="0"></span>
+						<label></label>
+					</div>
+					<div class="fpgaseg" id="hexplay">
+						<span class="hexplay" id="hex60" value="0"></span>
+						<span class="hexplay" id="hex61" value="0"></span>
+						<span class="hexplay" id="hex62" value="0"></span>
+						<span class="hexplay" id="hex63" value="0"></span>
+						<span class="hexplay" id="hex64" value="0"></span>
+						<span class="hexplay" id="hex65" value="0"></span>
+						<span class="hexplay" id="hex66" value="0"></span>
+						<span class="hexplay" id="hex67" value="0"></span>
+						<label></label>
+					</div>
+					<div class="fpgaseg" id="hexplay">
+						<span class="hexplay" id="hex70" value="0"></span>
+						<span class="hexplay" id="hex71" value="0"></span>
+						<span class="hexplay" id="hex72" value="0"></span>
+						<span class="hexplay" id="hex73" value="0"></span>
+						<span class="hexplay" id="hex74" value="0"></span>
+						<span class="hexplay" id="hex75" value="0"></span>
+						<span class="hexplay" id="hex76" value="0"></span>
+						<span class="hexplay" id="hex77" value="0"></span>
+						<label></label>
+					</div>
 				</div>
 				<div class="container">
 					segplay pin:
@@ -270,7 +314,7 @@
 				<div class="container">
 					hexplay pin:
 					<span class="fpgalabel" align="center">&nbsp;&nbsp;</span>
-					<span class="fpgalabel" align="center">&nbsp;&nbsp;</span>
+					<span class="fpgalabel" align="center">an2</span>
 					<span class="fpgalabel" align="center">an1</span>
 					<span class="fpgalabel" align="center">an0</span>
 					<span class="fpgalabel" align="center">d3</span>
@@ -281,7 +325,7 @@
 				<div class="container">
 					xdc,ucf sym:
 					<span class="fpgalabel" align="center">&nbsp;&nbsp;</span>
-					<span class="fpgalabel" align="center">&nbsp;&nbsp;</span>
+					<span class="fpgalabel" align="center">F18</span>
 					<span class="fpgalabel" align="center">B16</span>
 					<span class="fpgalabel" align="center">B17</span>
 					<span class="fpgalabel" align="center">A15</span>
@@ -290,7 +334,7 @@
 					<span class="fpgalabel" align="center">A14</span>
 				</div>
 			</div>
-			<div class="col-5 colmodule">
+			<div class="col-3 colmodule">
 				<div class="row">
 					<div class="col">
 						<p>soft clock</p>
@@ -318,12 +362,10 @@
 				<div class="row">
 					<div class="container">
 						clk btn pins:
-						<span class="fpgalabel" align="center">clk</span>
-						<span class="fpgalabel" align="center">btn</span>
+						<span class="fpgalabel" align="center">clk_btn</span>
 					</div>
 					<div class="container">
 						xdc,ucf sym:
-						<span class="fpgalabel" align="center">B18</span>
 						<span class="fpgalabel" align="center">A18</span>
 					</div>
 				</div>
@@ -336,32 +378,9 @@
 	<div class="container module">
 		<h4>Sampling Waveform</h4>
 		<div class="row">
-			<div class="col-3">
-				<div class="form-check form-check-inline">
-					<input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1"
-						value="last" checked>
-					<label class="form-check-label" for="inlineRadio1">last 10 secs</label>
-				</div>
-				<div class="form-check form-check-inline">
-					<input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2"
-						value="period">
-					<label class="form-check-label" for="inlineRadio2">period(Sec)</label>
-				</div>
-			</div>
 			<div class="col">
-				<div class="container">
-					<label for="start-time">Start :</label>
-					<input style="max-width: 100px;" id="start-time" type="number" step="0.2" value="0" min="0">
-					<label for="finish-time">Finish :</label>
-					<input style="max-width: 100px;" id="finish-time" type="number" step="0.2" value="5" min="0">
-				</div>
-			</div>
-			<div class="col">
-				<button type="button" id="view-button" class="btn btn-primary">View</button>
-			</div>
-		</div>
-		<div class="chart-container-container">
-			<div class="chart-container" id="chart-container">
+				<button type="button" id="view-button" class="btn btn-primary">Finish</button>
+				<button type="button" id="view-button" class="btn btn-primary" disabled>Download</button>
 			</div>
 		</div>
 	</div>
