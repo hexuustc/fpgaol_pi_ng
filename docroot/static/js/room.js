@@ -1,4 +1,4 @@
-// version = 1.0
+// version = 1.1
 // global variables
 // FPGAOL_NG_DEV
 var DEBUG_MODE = true;
@@ -12,7 +12,7 @@ var waveformmode = 'last';
 var notifyRecord = [];
 var series = [];
 var leds = [0, 0, 0, 0, 0, 0, 0, 0];
-var segs = [0, 0, 0, 0, 0, 0, 0, 0];
+var segs = [0, 0, 0, 0, 0, 0];
 var xAxis = {
     type: 'value',
     min: 0,
@@ -93,7 +93,7 @@ $(document).ready(function () {
     }
     uartSocket.onmessage = function (e) {
         var data = JSON.parse(e.data);
-        console.log(data['msg']);
+        // console.log(data['msg']);
         term.echo(data['msg']);
     };
     // setup websocket
@@ -102,7 +102,7 @@ $(document).ready(function () {
             'ws://' + DEBUG_WS_SERVER + '/ws/');
     } else {
         notifySocket = new WebSocket(
-            'ws://' + DEBUG_WS_SERVER + '/ws/');
+            'ws://' + PI_SERVER_ADDRESS + '/ws/');
     }
     notifySocket.onmessage = function (e) {
         var data = JSON.parse(e.data);
@@ -120,6 +120,11 @@ $(document).ready(function () {
                 notifyRecord.push(record);
                 chartAppendData(record, i == 7);
             }
+            for (var i = 0; i < 6; ++i) {
+                var lval = lvals % 2;
+                setSeg(i, lval);
+                lvals >>= 1;
+            }
             timeShift();
         } else if (gpio <= 7) {
             setLed(gpio, level);
@@ -127,7 +132,7 @@ $(document).ready(function () {
             notifyRecord.push(record);
             chartAppendData(record, false);
         } else {
-            setSeg(gpio, level);
+            setSeg(gpio - 8, level);
         }
     };
 
@@ -164,7 +169,7 @@ $(document).ready(function () {
         sendGpio(8, 0);
     });
     $("#fpgabtn").mousedown(function (e) {
-        sendGpio(8, 0);
+        sendGpio(8, 1);
     });
 
     // Handle file upload.
@@ -190,7 +195,6 @@ $(document).ready(function () {
                 }
             }
         };
-
 
         xhr.onreadystatechange = function () {
             if (this.readyState == 3) {
@@ -240,12 +244,12 @@ $(document).ready(function () {
 
 function setLed(ledid, ledstatus) {
     leds[ledid] = ledstatus % 10;
+    $(".segplay:eq(" + ledid + ")").attr("value", Math.floor(ledstatus % 10) ? "1" : "0");
     $("#led" + ledid).prop({ 'checked': Math.floor(ledstatus % 10) ? true : false });
 }
 
 function setSeg(segid, segstatus) {
     segs[segid] = segstatus % 10;
-    $(".segplay:eq(" + segid + ")").attr("value", Math.floor(segstatus % 10) ? "1" : "0");
     setHexplay();
 }
 
@@ -255,12 +259,9 @@ function setHexplay() {
     // 0 1 2 3 4 5 6 7 8 9 A b c d E F
     var v = segs[3] * 8 + segs[2] * 4 + segs[1] * 2 + segs[0];
     var s = hexPlaySegs[v];
-    for (var j = 0; j < 4; ++j) {
-        if (segs[7 - j] == 1) {
-            for (var i = 0; i < 7; ++i) {
-                $("#hex" + j + i).attr("value", s[i]);
-            }
-        }
+    var select = "#hex" + (3 - (segs[5] * 2 + segs[4]));
+    for (var i = 0; i < 7; ++i) {
+        $(select + i).attr("value", s[i]);
     }
     /*     for (var j = 0; j < 4; ++j) {
             if (segs[7 - j] == 0) {
@@ -307,7 +308,7 @@ function viewPeriod() {
                 'led' + gpio + ':' + notifyRecord[i][1]]);
             }
         }
-        console.log(periodSeries);
+        // console.log(periodSeries);
         myChart.setOption({
             series: periodSeries,
             xAxis: periodxAxis
