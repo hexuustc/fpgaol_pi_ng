@@ -12,8 +12,6 @@
 	<link href="static/css/room.css?version=1.1" rel="stylesheet">
 	<script src="static/js/jquery-3.4.1.min.js"></script>
 	<script src="static/js/bootstrap.bundle.min.js"></script>
-	<script src="static/js/jquery.timer.js"></script>
-	<script src="static/js/echarts.min.js"></script>
 	<script src="static/js/jquery.terminal.min.js"></script>
 	<script src="static/js/room.js?version=1.1"></script>
 
@@ -199,95 +197,18 @@
 						<span class="segplay" value="0"></span>
 						<label></label>
 					</div>
-					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-					<div class="fpgaseg">
-						<span class="hexplay" id="hex00" value="0"></span>
-						<span class="hexplay" id="hex01" value="0"></span>
-						<span class="hexplay" id="hex02" value="0"></span>
-						<span class="hexplay" id="hex03" value="0"></span>
-						<span class="hexplay" id="hex04" value="0"></span>
-						<span class="hexplay" id="hex05" value="0"></span>
-						<span class="hexplay" id="hex06" value="0"></span>
-						<span class="hexplay" id="hex07" value="0"></span>
-						<label></label>
+					<div class="hexplay"> 
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span0">&nbsp;</p></div>
+						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span1">&nbsp;</p></div>
+						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span2">&nbsp;</p></div>
+						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span3">&nbsp;</p></div>
+						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span4">&nbsp;</p></div>
+						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span5">&nbsp;</p></div>
+						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span6">&nbsp;</p></div>
+						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span7">0</p></div>
 					</div>
-					<div class="fpgaseg" id="hexplay">
-						<span class="hexplay" id="hex10" value="0"></span>
-						<span class="hexplay" id="hex11" value="0"></span>
-						<span class="hexplay" id="hex12" value="0"></span>
-						<span class="hexplay" id="hex13" value="0"></span>
-						<span class="hexplay" id="hex14" value="0"></span>
-						<span class="hexplay" id="hex15" value="0"></span>
-						<span class="hexplay" id="hex16" value="0"></span>
-						<span class="hexplay" id="hex17" value="0"></span>
-						<label></label>
-					</div>
-					<div class="fpgaseg" id="hexplay">
-						<span class="hexplay" id="hex20" value="0"></span>
-						<span class="hexplay" id="hex21" value="0"></span>
-						<span class="hexplay" id="hex22" value="0"></span>
-						<span class="hexplay" id="hex23" value="0"></span>
-						<span class="hexplay" id="hex24" value="0"></span>
-						<span class="hexplay" id="hex25" value="0"></span>
-						<span class="hexplay" id="hex26" value="0"></span>
-						<span class="hexplay" id="hex27" value="0"></span>
-						<label></label>
-					</div>
-					<div class="fpgaseg" id="hexplay">
-						<span class="hexplay" id="hex30" value="0"></span>
-						<span class="hexplay" id="hex31" value="0"></span>
-						<span class="hexplay" id="hex32" value="0"></span>
-						<span class="hexplay" id="hex33" value="0"></span>
-						<span class="hexplay" id="hex34" value="0"></span>
-						<span class="hexplay" id="hex35" value="0"></span>
-						<span class="hexplay" id="hex36" value="0"></span>
-						<span class="hexplay" id="hex37" value="0"></span>
-						<label></label>
-					</div>
-					<div class="fpgaseg">
-						<span class="hexplay" id="hex40" value="0"></span>
-						<span class="hexplay" id="hex41" value="0"></span>
-						<span class="hexplay" id="hex42" value="0"></span>
-						<span class="hexplay" id="hex43" value="0"></span>
-						<span class="hexplay" id="hex44" value="0"></span>
-						<span class="hexplay" id="hex45" value="0"></span>
-						<span class="hexplay" id="hex46" value="0"></span>
-						<span class="hexplay" id="hex47" value="0"></span>
-						<label></label>
-					</div>
-					<div class="fpgaseg" id="hexplay">
-						<span class="hexplay" id="hex50" value="0"></span>
-						<span class="hexplay" id="hex51" value="0"></span>
-						<span class="hexplay" id="hex52" value="0"></span>
-						<span class="hexplay" id="hex53" value="0"></span>
-						<span class="hexplay" id="hex54" value="0"></span>
-						<span class="hexplay" id="hex55" value="0"></span>
-						<span class="hexplay" id="hex56" value="0"></span>
-						<span class="hexplay" id="hex57" value="0"></span>
-						<label></label>
-					</div>
-					<div class="fpgaseg" id="hexplay">
-						<span class="hexplay" id="hex60" value="0"></span>
-						<span class="hexplay" id="hex61" value="0"></span>
-						<span class="hexplay" id="hex62" value="0"></span>
-						<span class="hexplay" id="hex63" value="0"></span>
-						<span class="hexplay" id="hex64" value="0"></span>
-						<span class="hexplay" id="hex65" value="0"></span>
-						<span class="hexplay" id="hex66" value="0"></span>
-						<span class="hexplay" id="hex67" value="0"></span>
-						<label></label>
-					</div>
-					<div class="fpgaseg" id="hexplay">
-						<span class="hexplay" id="hex70" value="0"></span>
-						<span class="hexplay" id="hex71" value="0"></span>
-						<span class="hexplay" id="hex72" value="0"></span>
-						<span class="hexplay" id="hex73" value="0"></span>
-						<span class="hexplay" id="hex74" value="0"></span>
-						<span class="hexplay" id="hex75" value="0"></span>
-						<span class="hexplay" id="hex76" value="0"></span>
-						<span class="hexplay" id="hex77" value="0"></span>
-						<label></label>
-					</div>
+
 				</div>
 				<div class="container">
 					segplay pin:

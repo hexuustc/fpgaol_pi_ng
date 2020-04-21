@@ -9,6 +9,7 @@ var term;
 var notifySocket;
 var PI_SERVER_ADDRESS;
 
+var hexPlayDigits = [];
 
 $(document).ready(function () {
     // waveform
@@ -146,6 +147,7 @@ $(document).ready(function () {
     term = $('#terminal').terminal(function (command) {
         uartSocket.send(JSON.stringify({ 'msg': command }));
     }, { prompt: '>', name: 'test', greetings: 'FPGAOL uart beta 1.0' });
+
 });
 
 function setLed(values) {
@@ -155,14 +157,9 @@ function setLed(values) {
     }
 }
 
-var hexPlaySegs = [["1", "1", "1", "1", "1", "1", "0", "0"], ["0", "1", "1", "0", "0", "0", "0", "0"], ["1", "1", "0", "1", "1", "0", "1", "0"], ["1", "1", "1", "1", "0", "0", "1", "0"], ["0", "1", "1", "0", "0", "1", "1", "0"], ["1", "0", "1", "1", "0", "1", "1", "0"], ["1", "0", "1", "1", "1", "1", "1", "0"], ["1", "1", "1", "0", "0", "0", "0", "0"], ["1", "1", "1", "1", "1", "1", "1", "0"], ["1", "1", "1", "1", "0", "1", "1", "0"], ["1", "1", "1", "0", "1", "1", "1", "0"], ["0", "0", "1", "1", "1", "1", "1", "0"], ["0", "0", "0", "1", "1", "0", "1", "0"], ["0", "1", "1", "1", "1", "0", "1", "0"], ["1", "0", "0", "1", "1", "1", "1", "0"], ["1", "0", "0", "0", "1", "1", "1", "0"]];
-
 function setSeg(values) {
     for (var i = 0; i < 8; ++i) {
-        var s = hexPlaySegs[values[i]];
-        for (var j = 0; j < 7; ++j) {
-            $("#hex" + i + j).attr("value", s[j]);
-        }
+        $("#hexplay_span" + i).html(values[i] == -1 ? '&nbsp;' : values[i]);
     }
 }
 
@@ -172,7 +169,6 @@ function sendGpio(gpio, level) {
         'level': level,
     }));
 }
-
 
 /*
  * debug functions
