@@ -6,7 +6,7 @@
 handler::handler() {
     // Configure static file controller
 
-    fileSettings.setValue("path", "../../docroot");
+    fileSettings.setValue("path", "/home/pi/docroot"); // Using absolute path when sudo
     fileSettings.setValue("encoding", "UTF-8");
     fileSettings.beginGroup("docroot");
     fileSettings.endGroup();
