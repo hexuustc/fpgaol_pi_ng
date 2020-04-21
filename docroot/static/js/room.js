@@ -17,12 +17,7 @@ $(document).ready(function () {
         viewPeriod();
     });
 
-    $("#inlineRadio1").change(function () {
-        waveformmode = $("input:radio[name=\"inlineRadioOptions\"]:checked").val();
-    });
-    $("#inlineRadio2").change(function () {
-        waveformmode = $("input:radio[name=\"inlineRadioOptions\"]:checked").val();
-    });
+
     PI_SERVER_ADDRESS = window.location.host + ':' + '100' + $("#pi").text().substr(2);
     // uart websocket
     if (DEBUG_MODE) {
