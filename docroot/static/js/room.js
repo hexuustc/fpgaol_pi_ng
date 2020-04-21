@@ -159,7 +159,7 @@ function setLed(values) {
 
 function setSeg(values) {
     for (var i = 0; i < 8; ++i) {
-        $("#hexplay_span" + i).html(values[i] == -1 ? '&nbsp;' : values[i]);
+        $("#hexplay_span" + i).html(values[i] == -1 ? '&nbsp;' : ['0','1','2', '3', '4', '5', '6', '7', '8', '9', 'A', 'b', 'C', 'd', 'E', 'F'][values[i]]);
     }
 }
 
