@@ -5,14 +5,17 @@
 #include <thread>
 #include <QSerialPort>
 #include <QByteArray>
+#include <QString>
+#include <QObject>
 #include <QWebSocket>
 
-class FPGA
+class FPGA : public QObject
 {
+	Q_OBJECT
+
 private:
 	// TODO: Do we really need two websockets?
-	QWebSocket *gpio_ws;
-	QWebSocket *serial_ws;
+	QObject *ws_server;
 	QSerialPort serial_port;
 
 	// Don't need SoftClockThread any more, pigpio can help us do so
@@ -20,14 +23,17 @@ private:
 public:
 
 	// Instantiated upon successfully open WebSocket connections
-	FPGA(QWebSocket *_gpio_ws, QWebSocket *_serial_ws);
+	FPGA();
 
 	// Called when WebSocket connection is closed
 	~FPGA();
 
-	// Program the FPGA, give me the absolute path
-	// Returns: return code of `fjtgcfg`, 0 if successful
-	int program_device(std::string filename);
+	void call_send_fpga_msg(QString msg);
+	void call_send_uart_msg(QString msg);
+public slots:
+	int start_notify();
+
+	int end_notify();
 
 	// Write a certain gpio
 	// Returns: return code of `pigpio.write`, 0 if successful
@@ -40,6 +46,11 @@ public:
 	// Set soft clock at certain frequecy, will use `gpioWaveTxSend`
 	// Returns: 0 if successful
 	int set_soft_clock(int freq_hz);
+
+signals:
+	void send_fpga_msg(QString msg);
+
+	void send_uart_msg(QString msg);
 };
 
 #endif /* FPGA_H */
