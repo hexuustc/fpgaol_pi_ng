@@ -14,9 +14,16 @@ public:
     explicit wsServer(quint16 port, bool debug = false, QObject *parent = nullptr);
     ~wsServer();
 
+public Q_SLOTS:
     void sendFPGAMessage(QString message);
     void sendUartMessage(QString message);
+
 Q_SIGNALS:
+	int notify_start();
+	int notify_end();
+	int gpio_write(int gpio, int level);
+	int uart_write(QByteArray msg);
+
     void closed();
 
 private Q_SLOTS:

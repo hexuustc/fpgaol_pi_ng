@@ -2,6 +2,7 @@
 #include "QtWebSockets/qwebsocketserver.h"
 #include "QtWebSockets/qwebsocket.h"
 #include <QtCore/QDebug>
+#include <QJsonDocument>
 
 QT_USE_NAMESPACE
 
@@ -73,9 +74,30 @@ void wsServer::recvUartMessage(QString message)
 void wsServer::recvFGPAMessage(QString message)
 {
     QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
-    if (m_debug)
-        qDebug() << "FPGA Message received:" << message;
     if (pClient) {
+		auto json = QJsonDocument::fromJson(message.toUtf8());
+
+		if (m_debug)
+			qDebug() << "FPGA Message received: GPIO: " << json["gpio"] << " level: " << json["level"];
+
+		int gpio = json["gpio"].toInt(), level = (int)json["level"].toBool();
+
+		int ret;
+		switch (gpio) {
+			case -1:
+				 if (emit notify_end() == 0) {
+					 ;
+				 }
+				 break;
+		    case -2:
+				 ret = emit notify_start();
+
+				 if (m_debug)
+					 qDebug() << "Start Notify returned: " << ret;
+				 break;
+			default:
+				 emit gpio_write(gpio, level);
+		}
         // pClient->sendTextMessage(message);
     }
 }
@@ -107,8 +129,9 @@ void wsServer::FPGASocketDisconnected()
     if (m_debug)
         qDebug() << "FPGA socketDisconnected:" << pClient;
     if (pClient) {
+		emit notify_end();
+
         FPGA_clients.removeAll(pClient);
         pClient->deleteLater();
     }
-    // endnotify
 }
