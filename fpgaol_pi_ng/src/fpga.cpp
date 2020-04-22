@@ -248,7 +248,7 @@ int FPGA::start_notify() {
 	int ret = gpioWrite_Bits_0_31_Clear(SW_MASK);
 	if (m_debug) qDebug() << "Clear returned: " << ret;
 
-	ret = gpioNotifyBegin(notify_handle, GPIO_MASK);
+	ret = gpioNotifyBegin(notify_handle, GPIO_MASK | WD_MASK);
 	if (m_debug) qDebug() << "NotifyBegin returned: " << ret;
 
 	ret = gpioSetGetSamplesFunc(sample_fn, GPIO_MASK | WD_MASK);
@@ -275,7 +275,7 @@ int FPGA::end_notify() {
 		gpioWrite_Bits_0_31_Clear(SW_MASK);
 		serial_port.close();
 		waitpid(pig_pid, NULL, 0);
-		gpioSetGetSamplesFunc(NULL, GPIO_MASK | WD_MASK);
+		gpioSetGetSamplesFunc(NULL, 0);
 	}
 
 	qInfo() << "Notify end!";
