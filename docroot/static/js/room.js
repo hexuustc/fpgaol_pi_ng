@@ -2,8 +2,8 @@
 // global variables
 // FPGAOL_NG_DEV
 var DEBUG_MODE = true;
-var DEBUG_HTTP_SERVER = "127.0.0.1:8080";
-var DEBUG_WS_SERVER = "127.0.0.1:8090";
+var DEBUG_HTTP_SERVER = "202.38.79.134:14000";
+var DEBUG_WS_SERVER = "202.38.79.134:14010";
 
 var term;
 var notifySocket;
@@ -46,9 +46,18 @@ $(document).ready(function () {
             setLed(values);
         } else if (type == 'SEG') {
             setSeg(values);
+        } else if (type == 'WF') {
+			document.getElementById("download").innerHTML = "Download";
+			$("#download").attr("href", "./waveform.vcd");
         }
     };
 
+    // Waveform generation
+    $("#generate").click(function() {
+		$("#generate").attr("disabled", "true");
+        document.getElementById("download").innerHTML = "Waiting...";
+        sendGpio(-1, false);
+    });
 
     notifySocket.onclose = function () {
         $("#timeoutModal").modal("show");
@@ -80,10 +89,10 @@ $(document).ready(function () {
 
     // fpgabtn
     $("#fpgabtn").mouseup(function (e) {
-        sendGpio(8, 0);
+        sendGpio(8, false);
     });
     $("#fpgabtn").mousedown(function (e) {
-        sendGpio(8, 1);
+        sendGpio(8, true);
     });
 
     // Handle file upload.
@@ -91,6 +100,7 @@ $(document).ready(function () {
     var filestatus = $("#filestatus");
     var statustext = $("#responsetext");
     $("#upload-button").click(function () {
+        sendGpio(-1, true); // Stop notification
         var fd = new FormData();
         fd.append("bitstream", $("#bitstream")[0].files[0]);
         fd.append('judge', 'normal');
@@ -117,11 +127,11 @@ $(document).ready(function () {
                 progress.removeClass("progress-bar-animated");
                 statustext.text(this.responseText);
                 if (this.status == 200) {
-                    $("#upload-button").removeAttr("disabled");
+					clear_everything();
                     filestatus.removeClass("alert-danger");
                     filestatus.removeClass("alert-info");
                     filestatus.addClass("alert-success");
-                    sendGpio(-2, 0);
+                    sendGpio(-2, false);
                 } else {
                     $("#upload-button").removeAttr("disabled");
                     filestatus.removeClass("alert-success");
@@ -163,6 +173,19 @@ function sendGpio(gpio, level) {
         'gpio': gpio,
         'level': level,
     }));
+}
+
+function clear_everything() {
+    for (var i = 0; i < 8; ++i) {
+        $("#sw" + i).prop({ 'checked': false });
+    }
+	
+	setSeg([-1, -1, -1, -1, -1, -1, -1, -1]);
+	setLed([0, 0, 0, 0, 0, 0, 0, 0]);
+
+	$("#upload-button").removeAttr("disabled");
+	$("#generate").removeAttr("disabled");
+	document.getElementById("download").innerHTML = "";
 }
 
 /*
