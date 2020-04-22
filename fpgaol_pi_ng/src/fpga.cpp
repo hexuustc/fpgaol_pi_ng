@@ -220,12 +220,6 @@ int FPGA::start_notify() {
 		dup2(fd, STDIN_FILENO);
 		dup2(out_fd, STDOUT_FILENO);
 
-		/*
-		   gpioReport_t g;
-		   while (read(STDIN_FILENO, &g, sizeof(gpioReport_t))) {
-		   printf("%u %u %8X\n", g.seqno, g.tick, g.level);
-		   }
-		   */
 		int a = execl("/usr/local/bin/pig2vcd", "pig2vcd", (char *) 0);
 		if (a) perror("EXE error: ");
 		return 0;
@@ -285,21 +279,6 @@ int init_gpio() {
 	return 0;
 }
 
-/*
-int main()
-{
-	init_gpio();
-
-	program_device("/home/pi/top1.bit");
-	sleep(10);
-
-	end_notify();
-	gpioTerminate();
-
-	return 0;
-}
-*/
-
 FPGA::FPGA(bool debug) {
 	m_debug = debug;
 	debugging = debug;
@@ -323,6 +302,8 @@ void FPGA::call_send_uart_msg(QString msg) {
 
 int FPGA::write_gpio(int gpio, int level) {
 	if (!notifying) return -1;
+
+	if (gpio >= 8) return gpioWrite(BUTTON[gpio - 8], level);
 
 	return gpioWrite(SW[gpio], level);
 }
