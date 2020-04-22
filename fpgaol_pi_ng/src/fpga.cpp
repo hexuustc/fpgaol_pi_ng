@@ -9,6 +9,9 @@
 #include <string.h>
 
 #include <thread>
+#include <iostream>
+#include <string>
+#include <bitset>
 #include "QtWebSockets/qwebsocket.h"
 #include <QtCore/QDebug>
 #include <QJsonArray>
@@ -34,6 +37,7 @@ static volatile uint32_t num_count[8][16];
 static uint32_t prev_level = 0, prev_tick = 0, cur_led = 0;
 static uint32_t seg_value = 0, seg_idx = 0;
 
+static bool debugging;
 static bool notifying = false;
 FPGA *fpga_instance = nullptr;
 
@@ -76,14 +80,14 @@ static void loop_fn() {
    QJsonArray led_val, seg_val;
 
    for (int i = 0; i < 8; i++) led_val.append(0);
-   for (int i = 0; i < 8; i++) seg_val.append(16);
+   for (int i = 0; i < 8; i++) seg_val.append(-1);
 
    led_json["type"] = "LED";
    seg_json["type"] = "SEG";
    led_json["values"] = led_val;
    seg_json["values"] = seg_val;
 
-   printf("Monitor thread started\n");
+   if (debugging) qDebug() << "Monitor thread started\n";
    while (1)
    {
       gpioDelay(93 * 1000);
@@ -108,7 +112,7 @@ static void loop_fn() {
 
 		  auto msg = QJsonDocument(led_json).toJson(QJsonDocument::Compact);
 
-		  qDebug() << "Send: " << msg;
+		  if (debugging) qDebug() << "Send: " << msg;
 
 		  fpga_instance->call_send_fpga_msg(msg);
 		  // gpio_ws->sendTextMessage(msg);
@@ -129,9 +133,11 @@ static void loop_fn() {
             }
          }
 
+         // printf("Index: %d, display: %d, light: %u, total: %u\n", i, max_num, max, total);
+
 		 int this_val;
 		 if (total < LIGHT_THRESH) {
-			 this_val = 16;
+			 this_val = -1;
 		 } else {
 			 this_val = max_num;
 		 }
@@ -140,7 +146,6 @@ static void loop_fn() {
 			 seg_val[7 - i] = this_val;
 			 changed = true;
 		 }
-         // printf("Index: %d, display: %d, light: %u, total: %u\n", i, max_num, max, total);
       }
 
 	  if (changed) {
@@ -148,7 +153,7 @@ static void loop_fn() {
 
 		  auto msg = QJsonDocument(seg_json).toJson(QJsonDocument::Compact);
 
-		  qDebug() << "Send: " << msg;
+		  if (debugging) qDebug() << "Send: " << msg;
 
 		  fpga_instance->call_send_fpga_msg(msg);
 	  }
@@ -176,7 +181,7 @@ static void sample_fn(const gpioSample_t *samples, int numSamples)
 	for (int s = 0; s < numSamples; s++)
 	{
 		auto level = samples[s].level;
-		if (level ^ prev_level & (GPIO_MASK | WD_MASK)) {
+		if ((level ^ prev_level) & (GPIO_MASK | WD_MASK)) {
 			num_count[seg_idx][seg_value] += (samples[s].tick - prev_tick);
 			prev_tick = samples[s].tick;
 			prev_level = level;
@@ -200,7 +205,7 @@ static void sample_fn(const gpioSample_t *samples, int numSamples)
 int FPGA::start_notify() {
 	// if (gpio_ws == nullptr || serial_ws == nullptr) return -1;
 
-	char cmd[50], fifo[20];
+	char fifo[20];
 
 	int notify_handle = gpioNotifyOpen();
 	sprintf(fifo, "/dev/pigpio%d", notify_handle);
@@ -222,20 +227,22 @@ int FPGA::start_notify() {
 		   }
 		   */
 		int a = execl("/usr/local/bin/pig2vcd", "pig2vcd", (char *) 0);
-		if (a)
-			perror("EXE error: ");
+		if (a) perror("EXE error: ");
 		return 0;
 	}
 
-	gpioWrite_Bits_0_31_Clear(GPIO_MASK);
+	int ret = gpioWrite_Bits_0_31_Clear(SW_MASK);
+	if (m_debug) qDebug() << "Clear returned: " << ret;
 
-	gpioNotifyBegin(notify_handle, GPIO_MASK);
+	ret = gpioNotifyBegin(notify_handle, GPIO_MASK);
+	if (m_debug) qDebug() << "NotifyBegin returned: " << ret;
 
-	gpioSetGetSamplesFunc(sample_fn, GPIO_MASK | WD_MASK);
+	ret = gpioSetGetSamplesFunc(sample_fn, GPIO_MASK | WD_MASK);
+	if (m_debug) qDebug() << "SetGetSFN returned: " << ret;
 
 	monitor_thrd = std::thread(loop_fn);
 
-	printf("Notify started\n");
+	if (m_debug) qDebug() << "Notify started";
 	notifying = true;
 
 	return 0;
@@ -244,10 +251,14 @@ int FPGA::start_notify() {
 int FPGA::end_notify() {
 	if (notifying) {
 		notifying = false;
+		monitor_thrd.join();
 		gpioNotifyClose(notify_handle);
-		printf("Waiting\n");
+		gpioWrite_Bits_0_31_Clear(SW_MASK);
 		waitpid(pig_pid, NULL, 0);
+		gpioSetGetSamplesFunc(NULL, GPIO_MASK | WD_MASK);
 	}
+
+	if (m_debug) qDebug() << "Notify end!";
 
 	return 0;
 }
@@ -269,7 +280,7 @@ int init_gpio() {
 
 	start_watchdog();
 
-	printf("GPIO init!\n");
+	if (debugging) qDebug() << "GPIO initialized!\n";
 
 	return 0;
 }
@@ -289,7 +300,9 @@ int main()
 }
 */
 
-FPGA::FPGA() {
+FPGA::FPGA(bool debug) {
+	m_debug = debug;
+	debugging = debug;
 	init_gpio();
 	fpga_instance = this;
 	// TODO: Initialize serial port

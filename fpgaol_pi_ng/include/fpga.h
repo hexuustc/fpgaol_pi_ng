@@ -6,7 +6,6 @@
 #include <QSerialPort>
 #include <QByteArray>
 #include <QString>
-#include <QObject>
 #include <QWebSocket>
 
 class FPGA : public QObject
@@ -15,15 +14,15 @@ class FPGA : public QObject
 
 private:
 	// TODO: Do we really need two websockets?
-	QObject *ws_server;
 	QSerialPort serial_port;
+	bool m_debug;
 
 	// Don't need SoftClockThread any more, pigpio can help us do so
 	std::thread monitor_thrd;
 public:
 
 	// Instantiated upon successfully open WebSocket connections
-	FPGA();
+	FPGA(bool m_debug=false);
 
 	// Called when WebSocket connection is closed
 	~FPGA();

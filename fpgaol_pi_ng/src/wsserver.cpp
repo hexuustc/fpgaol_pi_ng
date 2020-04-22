@@ -2,6 +2,9 @@
 #include "QtWebSockets/qwebsocketserver.h"
 #include "QtWebSockets/qwebsocket.h"
 #include <QtCore/QDebug>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QString>
 #include <QJsonDocument>
 
 QT_USE_NAMESPACE
@@ -86,7 +89,18 @@ void wsServer::recvFGPAMessage(QString message)
 		switch (gpio) {
 			case -1:
 				 if (emit notify_end() == 0) {
-					 ;
+                     QJsonObject reply;
+                     QJsonArray _v;
+					 if (level == 0){
+						 qDebug() << "Level: " << json["level"].toBool();
+						 reply["type"] = "WF";
+						 reply["values"] = _v;
+						 auto msg = QJsonDocument(reply).toJson(QJsonDocument::Compact);
+
+						 qDebug() << "Send: " << msg;
+
+						 pClient->sendTextMessage(msg);
+					 }
 				 }
 				 break;
 		    case -2:
