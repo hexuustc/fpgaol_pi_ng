@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     auto http_server = new httpServer(8080, &app);
     auto ws_server = new wsServer(8090, true, &app);
 
-	auto fpga = new FPGA();
+	auto fpga = new FPGA(true);
 
 	QObject::connect(ws_server, &wsServer::notify_start,
 			fpga, &FPGA::start_notify);

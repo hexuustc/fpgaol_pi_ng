@@ -70,7 +70,9 @@ void wsServer::recvUartMessage(QString message)
     if (m_debug)
         qDebug() << "uart Message received:" << message;
     if (pClient) {
-        pClient->sendTextMessage(message);
+		auto json = QJsonDocument::fromJson(message.toUtf8());
+		QString msg = json["msg"].toString();
+		emit uart_write((msg + "\n").toUtf8());
     }
 }
 

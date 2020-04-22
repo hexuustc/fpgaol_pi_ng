@@ -18,6 +18,7 @@
 #include <QJsonObject>
 #include <QString>
 #include <QJsonDocument>
+#include <QIODevice>
 
 #include "fpga.h"
 #include "pigpio.h"
@@ -72,6 +73,27 @@ static int start_watchdog() {
 	}
 }
 
+static void uart_fn(QSerialPort *serial_port) {
+   qInfo() << "Uart thread started\n";
+
+   while (true) {
+	   if (!notifying) return;
+	   if (serial_port->waitForReadyRead(500)) {
+		   QByteArray data = serial_port->readAll();
+
+		   if (!data.isEmpty()) {
+			   QJsonObject json;
+			   json["msg"] = QString(data);
+			   auto msg = QJsonDocument(json).toJson(QJsonDocument::Compact);
+
+			   if (debugging) qDebug() << "Send: " << msg;
+
+			   fpga_instance->call_send_uart_msg(msg);
+		   }
+	   }
+   }
+}
+
 static void loop_fn() {
    uint32_t count[8][16];
    uint32_t led;
@@ -87,7 +109,7 @@ static void loop_fn() {
    led_json["values"] = led_val;
    seg_json["values"] = seg_val;
 
-   if (debugging) qDebug() << "Monitor thread started\n";
+   qInfo() << "Monitor thread started\n";
    while (1)
    {
       gpioDelay(93 * 1000);
@@ -159,8 +181,6 @@ static void loop_fn() {
 	  }
 
       // printf("\n");
-
-      // TODO: Check serial
    }
 
 }
@@ -234,9 +254,13 @@ int FPGA::start_notify() {
 	ret = gpioSetGetSamplesFunc(sample_fn, GPIO_MASK | WD_MASK);
 	if (m_debug) qDebug() << "SetGetSFN returned: " << ret;
 
-	monitor_thrd = std::thread(loop_fn);
+	ret = (int)serial_port.open(QIODevice::ReadWrite);
+	if (m_debug) qDebug() << "SerialOpen returned: " << ret;
 
-	if (m_debug) qDebug() << "Notify started";
+	monitor_thrd = std::thread(loop_fn);
+	uart_thrd = std::thread(uart_fn, &serial_port);
+
+	qInfo() << "Notify started";
 	notifying = true;
 
 	return 0;
@@ -246,13 +270,15 @@ int FPGA::end_notify() {
 	if (notifying) {
 		notifying = false;
 		monitor_thrd.join();
+		uart_thrd.join();
 		gpioNotifyClose(notify_handle);
 		gpioWrite_Bits_0_31_Clear(SW_MASK);
+		serial_port.close();
 		waitpid(pig_pid, NULL, 0);
 		gpioSetGetSamplesFunc(NULL, GPIO_MASK | WD_MASK);
 	}
 
-	if (m_debug) qDebug() << "Notify end!";
+	qInfo() << "Notify end!";
 
 	return 0;
 }
@@ -274,7 +300,7 @@ int init_gpio() {
 
 	start_watchdog();
 
-	if (debugging) qDebug() << "GPIO initialized!\n";
+	qInfo() << "GPIO initialized!\n";
 
 	return 0;
 }
@@ -284,7 +310,10 @@ FPGA::FPGA(bool debug) {
 	debugging = debug;
 	init_gpio();
 	fpga_instance = this;
-	// TODO: Initialize serial port
+
+	system("sudo chmod 666 /dev/ttyUSB1");
+	serial_port.setPortName("/dev/ttyUSB1");
+	serial_port.setBaudRate(QSerialPort::Baud115200);
 }
 
 FPGA::~FPGA() {
@@ -311,7 +340,7 @@ int FPGA::write_gpio(int gpio, int level) {
 int FPGA::write_serial(QByteArray msg) {
 	if (!notifying) return -1;
 
-	return 0;
+	return serial_port.write(msg);
 }
 
 int FPGA::set_soft_clock(int freq_hz) {
