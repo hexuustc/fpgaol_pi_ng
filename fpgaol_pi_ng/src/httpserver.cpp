@@ -31,12 +31,14 @@ void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResp
     }
     if (path == "/set/") {
         token = request_token;
+        qDebug("now token is:%s", token.data());
         response.setStatus(200);
         response.write("ok", true);
         return;
     }
     if (path == "/unset/") {
         token = TOKEN_DEBUG_IGNORE;
+        qDebug("now token is:%s", token.data());
         response.setStatus(200);
         response.write("ok", true);
         return;
