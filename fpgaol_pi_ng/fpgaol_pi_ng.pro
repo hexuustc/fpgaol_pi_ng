@@ -8,10 +8,10 @@ INCLUDEPATH += include/
 LIBS += -lpigpio
 
 HEADERS += \
-           include/gpio.h \
            include/httpserver.h \
            include/serial.h \
            include/util.h \
+           include/gpio_defs.h \
            include/fpga.h \
            include/wsserver.h
 
