@@ -19,6 +19,7 @@ private:
 
 	// Don't need SoftClockThread any more, pigpio can help us do so
 	std::thread monitor_thrd;
+	std::thread uart_thrd;
 public:
 
 	// Instantiated upon successfully open WebSocket connections

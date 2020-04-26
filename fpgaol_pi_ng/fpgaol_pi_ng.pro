@@ -9,7 +9,6 @@ LIBS += -lpigpio
 
 HEADERS += \
            include/httpserver.h \
-           include/serial.h \
            include/util.h \
            include/gpio_defs.h \
            include/fpga.h \
