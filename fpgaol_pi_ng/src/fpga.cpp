@@ -42,6 +42,20 @@ static bool debugging;
 static bool notifying = false;
 FPGA *fpga_instance = nullptr;
 
+int FPGA::program_device(QString filename) {
+	pid_t pid = fork();
+	if (pid == 0) {
+		setgid(1000);
+		setuid(1000);
+		putenv("HOME=/home/pi");
+		execl("/usr/bin/djtgcfg", "djtgcfg", "prog", "-d", "Nexys4DDR",
+				"-i", "0", "-f", filename.toStdString(), NULL);
+	}
+	int wstatus;
+	waitpid(pid, &wstatus, 0);
+	return WEXITSTATUS(wstatus);
+}
+
 static int start_watchdog() {
 	gpioWaveClear();
 

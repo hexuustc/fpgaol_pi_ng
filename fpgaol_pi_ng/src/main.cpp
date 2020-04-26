@@ -2,7 +2,6 @@
 #include <QObject>
 #include "wsserver.h"
 #include "httpserver.h"
-#include "util.h"
 #include "fpga.h"
 #include <QtCore/QDebug>
 // using namespace stefanfrings;

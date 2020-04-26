@@ -1,5 +1,5 @@
 #include "httpserver.h"
-#include "util.h"
+#include "fpga.h"
 #include <QDateTime>
 #include <QIODevice>
 
@@ -72,7 +72,7 @@ void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResp
                 }
                 if (file->atEnd()) {
                     file_save.close();
-                    int r = programFPGA(file_name);
+                    int r = FPGA::program_device(file_name);
                     if (r) {
                         qDebug() << "program failed, ret" << r;
                         response.setStatus(500);
