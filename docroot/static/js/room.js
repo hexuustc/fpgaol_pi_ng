@@ -1,24 +1,39 @@
 // version = 1.1
 // global variables
 // FPGAOL_NG_DEV
-var DEBUG_MODE = true;
-var DEBUG_HTTP_SERVER = "202.38.79.134:14000";
-var DEBUG_WS_SERVER = "202.38.79.134:14010";
+var DEBUG_MODE = false;
+var DEBUG_HTTP_SERVER = "127.0.0.1:8080";
+var DEBUG_WS_SERVER = "127.0.0.1:8090";
 
+var token;
 var term;
 var notifySocket;
 var PI_SERVER_ADDRESS;
 
 var hexPlayDigits = [];
 
+function GetRequest() {
+    var url = location.search;
+    var theRequest = new Object();
+    if (url.indexOf("?") != -1) {
+        var str = url.substr(1);
+        strs = str.split("&");
+        for (var i = 0; i < strs.length; i++) {
+            theRequest[strs[i].split("=")[0]] = decodeURI(strs[i].split("=")[1]);
+        }
+    }
+    return theRequest;
+}
+
 $(document).ready(function () {
+    token = GetRequest()['token'];
+
     // waveform
     $("#view-button").click(function () {
         viewPeriod();
     });
 
-
-    PI_SERVER_ADDRESS = window.location.host + ':' + '100' + $("#pi").text().substr(2);
+    PI_SERVER_ADDRESS = window.location.host;
     // uart websocket
     if (DEBUG_MODE) {
         uartSocket = new WebSocket('ws://' + DEBUG_WS_SERVER + '/uartws/');
@@ -47,14 +62,14 @@ $(document).ready(function () {
         } else if (type == 'SEG') {
             setSeg(values);
         } else if (type == 'WF') {
-			document.getElementById("download").innerHTML = "Download";
-			$("#download").attr("href", "./waveform.vcd");
+            document.getElementById("download").innerHTML = "Download";
+            $("#download").attr("href", "./waveform.vcd");
         }
     };
 
     // Waveform generation
-    $("#generate").click(function() {
-		$("#generate").attr("disabled", "true");
+    $("#generate").click(function () {
+        $("#generate").attr("disabled", "true");
         document.getElementById("download").innerHTML = "Waiting...";
         sendGpio(-1, false);
     });
@@ -127,7 +142,7 @@ $(document).ready(function () {
                 progress.removeClass("progress-bar-animated");
                 statustext.text(this.responseText);
                 if (this.status == 200) {
-					clear_everything();
+                    clear_everything();
                     filestatus.removeClass("alert-danger");
                     filestatus.removeClass("alert-info");
                     filestatus.addClass("alert-success");
@@ -143,7 +158,7 @@ $(document).ready(function () {
         if (DEBUG_MODE) {
             xhr.open("POST", 'http://' + DEBUG_HTTP_SERVER + '/upload/');
         } else {
-            xhr.open("POST", 'http://' + PI_SERVER_ADDRESS + '/upload/');
+            xhr.open("POST", '/upload/?token=' + token);
         }
         xhr.send(fd);
     });
@@ -164,7 +179,7 @@ function setLed(values) {
 
 function setSeg(values) {
     for (var i = 0; i < 8; ++i) {
-        $("#hexplay_span" + i).html(values[i] == -1 ? '&nbsp;' : ['0','1','2', '3', '4', '5', '6', '7', '8', '9', 'A', 'b', 'C', 'd', 'E', 'F'][values[i]]);
+        $("#hexplay_span" + i).html(values[i] == -1 ? '&nbsp;' : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'b', 'C', 'd', 'E', 'F'][values[i]]);
     }
 }
 
@@ -179,13 +194,13 @@ function clear_everything() {
     for (var i = 0; i < 8; ++i) {
         $("#sw" + i).prop({ 'checked': false });
     }
-	
-	setSeg([-1, -1, -1, -1, -1, -1, -1, -1]);
-	setLed([0, 0, 0, 0, 0, 0, 0, 0]);
 
-	$("#upload-button").removeAttr("disabled");
-	$("#generate").removeAttr("disabled");
-	document.getElementById("download").innerHTML = "";
+    setSeg([-1, -1, -1, -1, -1, -1, -1, -1]);
+    setLed([0, 0, 0, 0, 0, 0, 0, 0]);
+
+    $("#upload-button").removeAttr("disabled");
+    $("#generate").removeAttr("disabled");
+    document.getElementById("download").innerHTML = "";
 }
 
 /*

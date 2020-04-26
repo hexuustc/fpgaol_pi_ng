@@ -7,10 +7,13 @@
 #include "staticfilecontroller.h"
 #include <QtCore/QObject>
 
+#define TOKEN_DEBUG_IGNORE "token_debug_ignore"
+
 class handler : public stefanfrings::HttpRequestHandler {
     Q_OBJECT
     Q_DISABLE_COPY(handler)
 private:
+    QByteArray token;
     QSettings fileSettings;
     stefanfrings::StaticFileController* staticFileController;
 public:

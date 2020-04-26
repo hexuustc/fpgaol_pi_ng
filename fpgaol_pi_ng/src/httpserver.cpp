@@ -5,12 +5,12 @@
 
 handler::handler() {
     // Configure static file controller
-
     fileSettings.setValue("path", "/home/pi/docroot"); // Using absolute path when sudo
     fileSettings.setValue("encoding", "UTF-8");
     fileSettings.beginGroup("docroot");
     fileSettings.endGroup();
     staticFileController = new stefanfrings::StaticFileController(&fileSettings);
+    token = TOKEN_DEBUG_IGNORE;
 }
 
 handler::~handler() {
@@ -20,8 +20,34 @@ handler::~handler() {
 void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response) {
     QByteArray path=request.getPath();
     qDebug("RequestMapper: path=%s",path.data());
+    QByteArray request_token = request.getParameter("token");
+    qDebug("token=%s", request_token.data());
+    if (path == "/") {
+        if (request_token != TOKEN_DEBUG_IGNORE && request_token != token) {
+            response.setStatus(403);
+            response.write("invaild token(timeout maybe)", true);
+            return;
+        }
+    }
+    if (path == "/set/") {
+        token = request_token;
+        response.setStatus(200);
+        response.write("ok", true);
+        return;
+    }
+    if (path == "/unset/") {
+        token = TOKEN_DEBUG_IGNORE;
+        response.setStatus(200);
+        response.write("ok", true);
+        return;
+    }
     if (path.startsWith("/upload"))
     {
+        if (request_token != TOKEN_DEBUG_IGNORE && request_token != token) {
+            response.setStatus(403);
+            response.write("invaild token(timeout maybe)", true);
+            return;
+        }
         QByteArray method = request.getMethod();
         response.setHeader("Access-Control-Allow-Origin", "*");
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with");
