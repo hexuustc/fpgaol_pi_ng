@@ -57,7 +57,7 @@ void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResp
         if (method == "POST") {
             QTemporaryFile* file=request.getUploadedFile("bitstream");
             QDateTime now = QDateTime::currentDateTime();
-            QString file_name = "../../" + now.toString("yyyyMMddHHmmss") + ".bit";
+            QString file_name = "/home/pi/bistream/" + now.toString("yyyyMMddHHmmss") + ".bit";
             QFile file_save(file_name);
             if (!file_save.open((QIODevice::WriteOnly))) {
                 qDebug("save bitstream file failed");
