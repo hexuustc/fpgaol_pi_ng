@@ -8,6 +8,7 @@
 
 int main(int argc, char *argv[])
 {
+	qInfo() << "FPGAOL_PI_NG compiled at "" << __TIME__ << ", " << __DATE__;
     QCoreApplication app(argc,argv);
 
     app.setApplicationName("fpgaol_pi_ng");
