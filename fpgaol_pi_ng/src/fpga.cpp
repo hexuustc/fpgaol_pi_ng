@@ -48,8 +48,9 @@ int FPGA::program_device(QString filename) {
 		setgid(1000);
 		setuid(1000);
 		putenv("HOME=/home/pi");
+		qDebug() << "file: " << filename;
 		execl("/usr/bin/djtgcfg", "djtgcfg", "prog", "-d", "Nexys4DDR",
-				"-i", "0", "-f", filename.toStdString(), NULL);
+				"-i", "0", "-f", filename.toStdString().c_str(), NULL);
 	}
 	int wstatus;
 	waitpid(pid, &wstatus, 0);
