@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <string.h>
 
+#include <exception>
 #include <thread>
 #include <iostream>
 #include <string>
@@ -42,13 +43,17 @@ static bool debugging;
 static bool notifying = false;
 FPGA *fpga_instance = nullptr;
 
+/*
+ * Program the FPGA.
+ * We can't call `system()` here, because the user of
+ * `djtgcfg` would `root` and it can't find the FPGA
+ */
 int FPGA::program_device(QString filename) {
 	pid_t pid = fork();
 	if (pid == 0) {
 		setgid(1000);
 		setuid(1000);
 		putenv("HOME=/home/pi");
-		qDebug() << "file: " << filename;
 		execl("/usr/bin/djtgcfg", "djtgcfg", "prog", "-d", "Nexys4DDR",
 				"-i", "0", "-f", filename.toStdString().c_str(), NULL);
 	}
@@ -57,6 +62,15 @@ int FPGA::program_device(QString filename) {
 	return WEXITSTATUS(wstatus);
 }
 
+/*
+ * This watchdog wave is used to wake up the monitor thread
+ * every 5 ms. We use this for the following reasons:
+ * - If the 7-seg signal keeps unchanged, this wave helps
+ *   calculate the duration of this signal.
+ * - With this GPIO changing, the pig2vcd program is able to 
+ *   detect level changes upon program successful, so we can 
+ *   get a complete waveform.
+ */
 static int start_watchdog() {
 	gpioWaveClear();
 
@@ -109,6 +123,10 @@ static void uart_fn(QSerialPort *serial_port) {
    }
 }
 
+/*
+ * This is the thread to monitor LED and 7-seg level changes,
+ * it's the main loop of our program
+ */
 static void loop_fn() {
    uint32_t count[8][16];
    uint32_t led;
@@ -152,8 +170,6 @@ static void loop_fn() {
 		  if (debugging) qDebug() << "Send: " << msg;
 
 		  fpga_instance->call_send_fpga_msg(msg);
-		  // gpio_ws->sendTextMessage(msg);
-		  // emit send_fpga_msg(msg);
       }
 
       // printf("Total: %d\n", cur_total_count);
@@ -200,6 +216,11 @@ static void loop_fn() {
 
 }
 
+/*
+ * This is the function called by pigpio every 1 ms,
+ * it calculates each duration when AN is `i` and 
+ * D is `j`
+ */
 static void sample_fn(const gpioSample_t *samples, int numSamples)
 {
 	const int *SEG_INDEX = SEG + 4;
@@ -212,7 +233,6 @@ static void sample_fn(const gpioSample_t *samples, int numSamples)
 
 	if (prev_tick == 0) prev_tick = samples[0].tick; // Initialize
 
-	// std::cout << "GPIO[31 -- 0]\t\t\t tick" << std::endl;
 	for (int s = 0; s < numSamples; s++)
 	{
 		auto level = samples[s].level;
@@ -230,16 +250,15 @@ static void sample_fn(const gpioSample_t *samples, int numSamples)
 			seg_value |= ((level >> SEG[2]) & 1) << 2;
 			seg_value |= ((level >> SEG[3]) & 1) << 3;
 		}
-
-		// std::string mystring =
-		// std::bitset<32>(level).to_string<char,std::string::traits_type,std::string::allocator_type>();
-		// std::cout << mystring << " " << samples[s].tick << std::endl;
 	}
 }
 
+/*
+ * This function is called upon program success,
+ * it opens the notification for all needed GPIO pins,
+ * and spawns pig2vcd to generate waveform
+ */
 int FPGA::start_notify() {
-	// if (gpio_ws == nullptr || serial_ws == nullptr) return -1;
-
 	char fifo[20];
 
 	int notify_handle = gpioNotifyOpen();
@@ -323,8 +342,11 @@ int init_gpio() {
 FPGA::FPGA(bool debug) {
 	m_debug = debug;
 	debugging = debug;
-	init_gpio();
 	fpga_instance = this;
+
+	if (init_gpio() != 0) {
+		throw std::runtime_error("GPIO initialization falied!");
+	}
 
 	system("sudo chmod 666 /dev/ttyUSB1");
 	serial_port.setPortName("/dev/ttyUSB1");

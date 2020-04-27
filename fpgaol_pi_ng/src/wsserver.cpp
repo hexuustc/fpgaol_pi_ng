@@ -6,6 +6,7 @@
 #include <QJsonObject>
 #include <QString>
 #include <QJsonDocument>
+#include <exception>
 
 QT_USE_NAMESPACE
 
@@ -21,7 +22,9 @@ wsServer::wsServer(quint16 port, bool debug, QObject *parent) :
         connect(m_pWebSocketServer, &QWebSocketServer::newConnection,
                 this, &wsServer::onNewConnection);
         connect(m_pWebSocketServer, &QWebSocketServer::closed, this, &wsServer::closed);
-    }
+    } else {
+		throw std::runtime_error("Ws server failed to start!");
+	}
 }
 
 wsServer::~wsServer()

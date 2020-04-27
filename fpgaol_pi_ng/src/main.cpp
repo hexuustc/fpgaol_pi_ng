@@ -4,20 +4,35 @@
 #include "httpserver.h"
 #include "fpga.h"
 #include <QtCore/QDebug>
+#include <exception>
 // using namespace stefanfrings;
 
 int main(int argc, char *argv[])
 {
-	qInfo() << "FPGAOL_PI_NG compiled at "" << __TIME__ << ", " << __DATE__;
+	qInfo() << "FPGAOL_PI_NG compiled at " << __TIME__ << ", " << __DATE__;
     QCoreApplication app(argc,argv);
 
     app.setApplicationName("fpgaol_pi_ng");
     app.setOrganizationName("fpgaol_developer");
 
-    auto http_server = new httpServer(8080, &app);
-    auto ws_server = new wsServer(8090, true, &app);
+    new httpServer(8080, &app);
+	
+	wsServer *ws_server;
+	FPGA *fpga;
 
-	auto fpga = new FPGA(true);
+	try {
+		ws_server = new wsServer(8090, false, &app);
+	} catch (const std::exception& e) {
+		qWarning() << (e.what());
+		return 255;
+	}
+
+	try {
+		fpga = new FPGA(false);
+	} catch (const std::exception& e) {
+		qWarning() << (e.what());
+		return 255;
+	}
 
 	QObject::connect(ws_server, &wsServer::notify_start,
 			fpga, &FPGA::start_notify);
