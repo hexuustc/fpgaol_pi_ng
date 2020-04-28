@@ -116,53 +116,58 @@ $(document).ready(function () {
     var statustext = $("#responsetext");
     $("#upload-button").click(function () {
         sendGpio(-1, true); // Stop notification
-        var fd = new FormData();
-        fd.append("bitstream", $("#bitstream")[0].files[0]);
-        fd.append('judge', 'normal');
-        var xhr = new XMLHttpRequest();
-        xhr.upload.onprogress = function (e) {
-            $("#upload-button").attr("disabled", "false");
-            filestatus.removeClass("alert-danger");
-            filestatus.removeClass("alert-success");
-            filestatus.addClass("alert-info");
-            progress.addClass("progress-bar-animated");
-            if (e.lengthComputable) {
-                progress.attr("style", "width:" + e.loaded / e.total * 100 + "%");
-                statustext.text("Uploading bitstream file");
-                if (e.loaded >= e.total) {
-                    statustext.text("Programming device");
-                }
-            }
-        };
 
-        xhr.onreadystatechange = function () {
-            if (this.readyState == 3) {
-                statustext.text("Programming device, please wait");
-            } else if (this.readyState == 4) {
-                progress.removeClass("progress-bar-animated");
-                statustext.text(this.responseText);
-                if (this.status == 200) {
-                    clear_everything();
-                    filestatus.removeClass("alert-danger");
-                    filestatus.removeClass("alert-info");
-                    filestatus.addClass("alert-success");
-                    sendGpio(-2, false);
-                } else {
-                    $("#upload-button").removeAttr("disabled");
-                    filestatus.removeClass("alert-success");
-                    filestatus.removeClass("alert-info");
-                    filestatus.addClass("alert-danger");
+        var file = $("#bitstream")[0].files[0];
+        var zip = new JSZip();
+        zip.file("bitstream.bit", file, { binary: true, unixPermissions: "755" });
+        zip.generateAsync({ type: "blob", compression: "DEFLATE" }).then(function (zipped_file) {
+            var fd = new FormData();
+            fd.append('bitstream', zipped_file);
+            fd.append('judge', 'normal');
+            var xhr = new XMLHttpRequest();
+            xhr.upload.onprogress = function (e) {
+                $("#upload-button").attr("disabled", "false");
+                filestatus.removeClass("alert-danger");
+                filestatus.removeClass("alert-success");
+                filestatus.addClass("alert-info");
+                progress.addClass("progress-bar-animated");
+                if (e.lengthComputable) {
+                    progress.attr("style", "width:" + e.loaded / e.total * 100 + "%");
+                    statustext.text("Uploading bitstream file");
+                    if (e.loaded >= e.total) {
+                        statustext.text("Programming device");
+                    }
                 }
+            };
+
+            xhr.onreadystatechange = function () {
+                if (this.readyState == 3) {
+                    statustext.text("Programming device, please wait");
+                } else if (this.readyState == 4) {
+                    progress.removeClass("progress-bar-animated");
+                    statustext.text(this.responseText);
+                    if (this.status == 200) {
+                        clear_everything();
+                        filestatus.removeClass("alert-danger");
+                        filestatus.removeClass("alert-info");
+                        filestatus.addClass("alert-success");
+                        sendGpio(-2, false);
+                    } else {
+                        $("#upload-button").removeAttr("disabled");
+                        filestatus.removeClass("alert-success");
+                        filestatus.removeClass("alert-info");
+                        filestatus.addClass("alert-danger");
+                    }
+                }
+            };
+            if (DEBUG_MODE) {
+                xhr.open("POST", 'http://' + DEBUG_HTTP_SERVER + '/upload/');
+            } else {
+                xhr.open("POST", '/upload/?token=' + token);
             }
-        };
-        if (DEBUG_MODE) {
-            xhr.open("POST", 'http://' + DEBUG_HTTP_SERVER + '/upload/');
-        } else {
-            xhr.open("POST", '/upload/?token=' + token);
-        }
-        xhr.send(fd);
+            xhr.send(fd);
+        });
     });
-
     // uart terminal
     term = $('#terminal').terminal(function (command) {
         uartSocket.send(JSON.stringify({ 'msg': command }));

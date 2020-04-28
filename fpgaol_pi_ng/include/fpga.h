@@ -31,7 +31,7 @@ public:
 	void call_send_fpga_msg(QString msg);
 	void call_send_uart_msg(QString msg);
 
-	static int program_device(QString filename);
+	static int program_device();
 public slots:
 	int start_notify();
 

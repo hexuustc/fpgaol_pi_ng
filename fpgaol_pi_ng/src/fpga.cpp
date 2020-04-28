@@ -48,17 +48,19 @@ FPGA *fpga_instance = nullptr;
  * We can't call `system()` here, because the user of
  * `djtgcfg` would `root` and it can't find the FPGA
  */
-int FPGA::program_device(QString filename) {
+int FPGA::program_device() {
+	system("unzip -o /home/pi/bistream/bitstream.zip -d /home/pi/bistream/");
 	pid_t pid = fork();
 	if (pid == 0) {
 		setgid(1000);
 		setuid(1000);
 		putenv("HOME=/home/pi");
 		execl("/usr/bin/djtgcfg", "djtgcfg", "prog", "-d", "Nexys4DDR",
-				"-i", "0", "-f", filename.toStdString().c_str(), NULL);
+				"-i", "0", "-f", "/home/pi/bistream/bitstream.bit", NULL);
 	}
 	int wstatus;
 	waitpid(pid, &wstatus, 0);
+	system("rm -rf /home/pi/bistream/bitstream.bit");
 	return WEXITSTATUS(wstatus);
 }
 

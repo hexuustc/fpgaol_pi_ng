@@ -57,7 +57,7 @@ void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResp
         if (method == "POST") {
             QTemporaryFile* file=request.getUploadedFile("bitstream");
             QDateTime now = QDateTime::currentDateTime();
-            QString file_name = "/home/pi/bistream/" + now.toString("yyyyMMddHHmmss") + ".bit";
+            QString file_name = "/home/pi/bistream/bitstream.zip";
             QFile file_save(file_name);
             if (!file_save.open((QIODevice::WriteOnly))) {
                 qDebug("save bitstream file failed");
@@ -72,7 +72,7 @@ void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResp
                 }
                 if (file->atEnd()) {
                     file_save.close();
-                    int r = FPGA::program_device(file_name);
+                    int r = FPGA::program_device();
                     if (r) {
                         qDebug() << "program failed, ret" << r;
                         response.setStatus(500);

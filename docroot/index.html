@@ -3,8 +3,6 @@
 <html>
 
 <head>
-
-
 	<title>FPGA Online</title>
 	<link href="static/css/bootstrap.min.css" rel="stylesheet">
 	<link href="static/css/jquery.terminal.min.css" rel="stylesheet">
@@ -14,7 +12,7 @@
 	<script src="static/js/bootstrap.bundle.min.js"></script>
 	<script src="static/js/jquery.terminal.min.js"></script>
 	<script src="static/js/room.js?version=1.1"></script>
-
+	<script src="static/js/jszip.min.js"></script>
 </head>
 
 <body>
@@ -197,16 +195,32 @@
 						<span class="segplay" value="0"></span>
 						<label></label>
 					</div>
-					<div class="hexplay"> 
+					<div class="hexplay">
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span0">&nbsp;</p></div>
-						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span1">&nbsp;</p></div>
-						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span2">&nbsp;</p></div>
-						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span3">&nbsp;</p></div>
-						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span4">&nbsp;</p></div>
-						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span5">&nbsp;</p></div>
-						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span6">&nbsp;</p></div>
-						<div class="hexplay_out" align="center"><p class="hexplay_span" id="hexplay_span7">0</p></div>
+						<div class="hexplay_out" align="center">
+							<p class="hexplay_span" id="hexplay_span0">&nbsp;</p>
+						</div>
+						<div class="hexplay_out" align="center">
+							<p class="hexplay_span" id="hexplay_span1">&nbsp;</p>
+						</div>
+						<div class="hexplay_out" align="center">
+							<p class="hexplay_span" id="hexplay_span2">&nbsp;</p>
+						</div>
+						<div class="hexplay_out" align="center">
+							<p class="hexplay_span" id="hexplay_span3">&nbsp;</p>
+						</div>
+						<div class="hexplay_out" align="center">
+							<p class="hexplay_span" id="hexplay_span4">&nbsp;</p>
+						</div>
+						<div class="hexplay_out" align="center">
+							<p class="hexplay_span" id="hexplay_span5">&nbsp;</p>
+						</div>
+						<div class="hexplay_out" align="center">
+							<p class="hexplay_span" id="hexplay_span6">&nbsp;</p>
+						</div>
+						<div class="hexplay_out" align="center">
+							<p class="hexplay_span" id="hexplay_span7">0</p>
+						</div>
 					</div>
 
 				</div>
