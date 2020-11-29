@@ -114,6 +114,20 @@ $(document).ready(function () {
     var progress = $("#progress");
     var filestatus = $("#filestatus");
     var statustext = $("#responsetext");
+
+    $("#restart-button").click(function(){
+        sendGpio(-1, true); // Stop notification
+
+        var xhr = new XMLHttpRequest();
+        if (DEBUG_MODE) {
+            xhr.open('GET', 'http://' + DEBUG_HTTP_SERVER + '/restart/');
+        } else {
+            xhr.open('GET', '/restart/?token=' + token);
+        }
+	xhr.send();
+    })
+
+
     $("#upload-button").click(function () {
         sendGpio(-1, true); // Stop notification
 
