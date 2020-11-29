@@ -5,12 +5,24 @@
 #include "fpga.h"
 #include <QtCore/QDebug>
 #include <exception>
+#include <log.h>
 // using namespace stefanfrings;
 
 int main(int argc, char *argv[])
 {
+
+	qInstallMessageHandler(outputMessage);
+    /*所有使用方法*/
+/*
+    qDebug("This is a debug message");
+    qWarning("This is a warning message");
+    qCritical("This is a critical message");
+    qFatal("This is a fatal message");
+*/
+    QCoreApplication app(argc, argv);
+
 	qInfo() << "FPGAOL_PI_NG compiled at " << __TIME__ << ", " << __DATE__;
-    QCoreApplication app(argc,argv);
+    //QCoreApplication app(argc,argv);
 
     app.setApplicationName("fpgaol_pi_ng");
     app.setOrganizationName("fpgaol_developer");

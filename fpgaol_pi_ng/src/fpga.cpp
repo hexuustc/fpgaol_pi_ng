@@ -7,6 +7,7 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <string.h>
+#include <mutex>
 
 #include <exception>
 #include <thread>
@@ -36,6 +37,7 @@ static int pig_pid;
 static int notify_handle;
 static volatile int g_reset_counts = 0;
 static volatile uint32_t num_count[8][16];
+static std::mutex mtx;
 static uint32_t prev_level = 0, prev_tick = 0, cur_led = 0;
 static uint32_t seg_value = 0, seg_idx = 0;
 
@@ -50,17 +52,22 @@ FPGA *fpga_instance = nullptr;
  */
 int FPGA::program_device() {
 	system("unzip -o /home/pi/bistream/bitstream.zip -d /home/pi/bistream/");
+	qDebug("FPGA FPGA FPGA --------------  unzip finished");
 	pid_t pid = fork();
+	qDebug("FPGA FPGA FPGA --------------  fork finished");
 	if (pid == 0) {
 		setgid(1000);
 		setuid(1000);
 		putenv("HOME=/home/pi");
 		execl("/usr/bin/djtgcfg", "djtgcfg", "prog", "-d", "Nexys4DDR",
 				"-i", "0", "-f", "/home/pi/bistream/bitstream.bit", NULL);
+		qDebug("FPGA FPGA FPGA --------------  program finished");
 	}
 	int wstatus;
 	waitpid(pid, &wstatus, 0);
+	qDebug("FPGA FPGA FPGA --------------  waitpid finished");
 	system("rm -rf /home/pi/bistream/bitstream.bit");
+	qDebug("FPGA FPGA FPGA --------------  rm the bitstream finished");
 	return WEXITSTATUS(wstatus);
 }
 
@@ -75,6 +82,7 @@ int FPGA::program_device() {
  */
 static int start_watchdog() {
 	gpioWaveClear();
+	qDebug("GPIO GPIO GPIO -------------- init clear finished");
 
 	gpioPulse_t pulse[2];
 
@@ -91,15 +99,18 @@ static int start_watchdog() {
 	gpioWaveAddGeneric(2, pulse);
 
 	int wave_id = gpioWaveCreate();
+	qDebug("GPIO GPIO GPIO -------------- create the new wave_id finished");
 
 	if (wave_id >= 0)
 	{
 		gpioWaveTxSend(wave_id, PI_WAVE_MODE_REPEAT);
+		qDebug("GPIO GPIO GPIO -------------- gpio wave send success");
 		return 0;
 	}
 	else
 	{
 		return -1;
+		qDebug("GPIO GPIO GPIO -------------- gpio wave send failed");
 		// Wave create failed.
 	}
 }
@@ -150,11 +161,12 @@ static void loop_fn() {
       gpioDelay(93 * 1000);
 
 	  if (!notifying) return;
-
+	
+	mtx.lock();
       memcpy(count, (void *)num_count, sizeof(count));
 
       g_reset_counts = 1;
-
+	mtx.unlock();
       // Has leds changed?
       led = gpioRead_Bits_0_31() & LED_MASK;
 	  // printf("LED : %04X\n", led);
@@ -225,6 +237,7 @@ static void loop_fn() {
  */
 static void sample_fn(const gpioSample_t *samples, int numSamples)
 {
+	mtx.lock();
 	const int *SEG_INDEX = SEG + 4;
 
 	if (g_reset_counts)
@@ -253,6 +266,7 @@ static void sample_fn(const gpioSample_t *samples, int numSamples)
 			seg_value |= ((level >> SEG[3]) & 1) << 3;
 		}
 	}
+	mtx.unlock();
 }
 
 /*
@@ -356,7 +370,9 @@ FPGA::FPGA(bool debug) {
 }
 
 FPGA::~FPGA() {
+	qDebug("FPGA FPGA FPGA-------------- gpioRerminate begin");
 	gpioTerminate();
+	qDebug("FPGA FPGA FPGA-------------- gpioRerminate end");
 	fpga_instance = nullptr;
 }
 

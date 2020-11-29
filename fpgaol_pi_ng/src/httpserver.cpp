@@ -26,28 +26,38 @@ void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResp
         if (request_token != TOKEN_DEBUG_IGNORE && request_token != token) {
             response.setStatus(403);
             response.write("invaild token(timeout maybe)", true);
+            qDebug("path is in the location / , there is an invaild token");
             return;
         }
     }
     if (path == "/set/") {
         token = request_token;
         qDebug("now token is:%s", token.data());
+        qDebug("path is in the location /set/");
         response.setStatus(200);
         response.write("ok", true);
         return;
     }
-    if (path == "/unset/") {
-        token = TOKEN_DEBUG_IGNORE;
-        qDebug("now token is:%s", token.data());
+    if (path == "/restart/") {
+        if(request_token != TOKEN_DEBUG_IGNORE && request_token != token)
+            return;
+        // QByteArray method = request.getMethod();
+        // if (method == "POST") {
+        // qDebug("now token is:%s", token.data());
+        qDebug("path is in the location /restart/");
         response.setStatus(200);
-        response.write("ok", true);
-        return;
+        // response.write("ok", true);
+        response.write("Restarting...", true);
+        exit(1);
+        // return;
+        // }
     }
     if (path.startsWith("/upload"))
     {
         if (request_token != TOKEN_DEBUG_IGNORE && request_token != token) {
             response.setStatus(403);
             response.write("invaild token(timeout maybe)", true);
+            qDebug("path is in the location /upload, failed, and return the 403, because the token is invalid");
             return;
         }
         QByteArray method = request.getMethod();
