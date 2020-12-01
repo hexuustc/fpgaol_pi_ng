@@ -92,32 +92,34 @@ void wsServer::recvFGPAMessage(QString message)
 		int gpio = json["gpio"].toInt(), level = (int)json["level"].toBool();
 
 		int ret;
-		switch (gpio) {
-			case -1:
-				 if (emit notify_end() == 0) {
-                     QJsonObject reply;
-                     QJsonArray _v;
-					 if (level == 0){
-						 qDebug() << "Level: " << json["level"].toBool();
-						 reply["type"] = "WF";
-						 reply["values"] = _v;
-						 auto msg = QJsonDocument(reply).toJson(QJsonDocument::Compact);
+        if(gpio == -1){
+            if (emit notify_end() == 0) {
+                QJsonObject reply;
+                QJsonArray _v;
+                if (level == 0){
+                    qDebug() << "Level: " << json["level"].toBool();
+                    reply["type"] = "WF";
+                    reply["values"] = _v;
+                    auto msg = QJsonDocument(reply).toJson(QJsonDocument::Compact);
 
-						 qDebug() << "Send: " << msg;
+                    qDebug() << "Send: " << msg;
 
-						 pClient->sendTextMessage(msg);
-					 }
-				 }
-				 break;
-		    case -2:
-				 ret = emit notify_start();
+                    pClient->sendTextMessage(msg);
+                }
+            }
+        }
+        else if(gpio == -2){
+            ret = emit notify_start();
 
-				 if (m_debug)
-					 qDebug() << "Start Notify returned: " << ret;
-				 break;
-			default:
-				 emit gpio_write(gpio, level);
-		}
+            if (m_debug)
+                qDebug() << "Start Notify returned: " << ret;
+        }
+        else if(gpio >= 0){
+            emit gpio_write(gpio, level);
+        }
+        else{
+            qDebug() << "WARNING: reach undefined place!!!!!!!!!!!!!!!";
+        }
         // pClient->sendTextMessage(message);
     }
 }

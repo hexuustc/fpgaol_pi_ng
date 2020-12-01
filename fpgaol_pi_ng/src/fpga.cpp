@@ -387,9 +387,11 @@ void FPGA::call_send_uart_msg(QString msg) {
 int FPGA::write_gpio(int gpio, int level) {
 	if (!notifying) return -1;
 
-	if (gpio >= 8) return gpioWrite(BUTTON[gpio - 8], level);
+	if (gpio == 8) return gpioWrite(BUTTON[gpio - 8], level);
 
-	return gpioWrite(SW[gpio], level);
+	if (gpio >= 0 && gpio < 8) return gpioWrite(SW[gpio], level);
+	
+	qDebug() << "WARNING: writing GPIO into undefined place";
 }
 
 int FPGA::write_serial(QByteArray msg) {
