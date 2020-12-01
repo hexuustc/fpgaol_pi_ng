@@ -30,6 +30,7 @@ wsServer::wsServer(quint16 port, bool debug, QObject *parent) :
 wsServer::~wsServer()
 {
     m_pWebSocketServer->close();
+    qDebug() << "wsServer DISCONNECTED!";
     qDeleteAll(uart_clients.begin(), uart_clients.end());
     qDeleteAll(FPGA_clients.begin(), FPGA_clients.end());
 }

@@ -32,25 +32,28 @@ void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResp
     }
     if (path == "/set/") {
         token = request_token;
-        qDebug("now token is:%s", token.data());
-        qDebug("path is in the location /set/");
+        qDebug("(set)now token is:%s", token.data());
+        //qDebug("path is in the location /set/");
         response.setStatus(200);
         response.write("ok", true);
+        return;
+    }
+    if (path == "/unset/") {
+        token = TOKEN_DEBUG_IGNORE;
+        qDebug("(unset)now token is:%s", token.data());
+        response.setStatus(200);
+        response.write("ok", true);
+        qDebug("now ready to restart");
+        exit(1);
         return;
     }
     if (path == "/restart/") {
         if(request_token != TOKEN_DEBUG_IGNORE && request_token != token)
             return;
-        // QByteArray method = request.getMethod();
-        // if (method == "POST") {
-        // qDebug("now token is:%s", token.data());
         qDebug("path is in the location /restart/");
         response.setStatus(200);
-        // response.write("ok", true);
         response.write("Restarting...", true);
         exit(1);
-        // return;
-        // }
     }
     if (path.startsWith("/upload"))
     {
@@ -65,6 +68,8 @@ void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResp
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with");
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
         if (method == "POST") {
+            system("rm -rf /home/pi/docroot/waveform.vcd");
+            qDebug("removed useless vcd file");
             QTemporaryFile* file=request.getUploadedFile("bitstream");
             QDateTime now = QDateTime::currentDateTime();
             QString file_name = "/home/pi/bistream/bitstream.zip";
