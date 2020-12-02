@@ -1,4 +1,4 @@
-// version = 1.2
+// version = 1.3
 // global variables
 // FPGAOL_NG_DEV
 var DEBUG_MODE = false;
