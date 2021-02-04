@@ -1,7 +1,7 @@
 // version = 1.3
 // global variables
 // FPGAOL_NG_DEV
-var DEBUG_MODE = false;
+var DEBUG_MODE = true;
 var DEBUG_HTTP_SERVER = "127.0.0.1:8080";
 var DEBUG_WS_SERVER = "127.0.0.1:8090";
 
@@ -163,7 +163,7 @@ $(document).ready(function () {
                 }
             };
             if (DEBUG_MODE) {
-                xhr.open("POST", 'http://' + DEBUG_HTTP_SERVER + '/upload/');
+                xhr.open("POST", 'http://' + DEBUG_HTTP_SERVER + '/upload/?token=' + token);
             } else {
                 xhr.open("POST", '/upload/?token=' + token);
             }
