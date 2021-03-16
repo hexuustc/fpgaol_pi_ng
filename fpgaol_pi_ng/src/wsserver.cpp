@@ -96,6 +96,7 @@ void wsServer::recvFGPAMessage(QString message)
 
 		int ret;
         if(gpio == -1){
+            qDebug() << "END notify";
             if (emit notify_end() == 0) {
                 QJsonObject reply;
                 QJsonArray _v;
