@@ -29,7 +29,7 @@ public:
 	~FPGA();
 
 	void call_send_fpga_msg(QString msg);
-	void call_send_uart_msg(QString msg);
+	// void call_send_uart_msg(QString msg);
 
 	static int program_device();
 public slots:
@@ -52,7 +52,7 @@ public slots:
 signals:
 	void send_fpga_msg(QString msg);
 
-	void send_uart_msg(QString msg);
+	// void send_uart_msg(QString msg);
 };
 
 #endif /* FPGA_H */

@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
 
 	qInstallMessageHandler(outputMessage);
-    /*ËùÓÐÊ¹ÓÃ·½·¨*/
+    /*ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½Ã·ï¿½ï¿½ï¿½*/
 /*
     qDebug("This is a debug message");
     qWarning("This is a warning message");
@@ -56,8 +56,8 @@ int main(int argc, char *argv[])
 			fpga, &FPGA::write_serial);
 	QObject::connect(fpga, &FPGA::send_fpga_msg,
 			ws_server, &wsServer::sendFPGAMessage);
-	QObject::connect(fpga, &FPGA::send_uart_msg,
-			ws_server, &wsServer::sendUartMessage);
+	// QObject::connect(fpga, &FPGA::send_uart_msg,
+	// 		ws_server, &wsServer::sendFPGAMessage);
 
     qInfo("Application has started");
     app.exec();

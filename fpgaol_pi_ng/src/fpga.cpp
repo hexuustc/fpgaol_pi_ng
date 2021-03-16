@@ -20,6 +20,7 @@
 #include <QString>
 #include <QJsonDocument>
 #include <QIODevice>
+#include <QMutex>
 
 #include "fpga.h"
 #include "pigpio.h"
@@ -42,6 +43,7 @@ static uint32_t seg_value = 0, seg_idx = 0;
 static bool debugging;
 static bool notifying = false;
 FPGA *fpga_instance = nullptr;
+QMutex mx;
 
 /*
  * This watchdog wave is used to wake up the monitor thread
@@ -111,16 +113,21 @@ static void uart_fn(QSerialPort *serial_port) {
    while (true) {
 	   if (!notifying) return;
 	   if (serial_port->waitForReadyRead(500)) {
+		   mx.lock();
+		//    puts("in 1");
 		   QByteArray data = serial_port->readAll();
-
+		   mx.unlock();
+		//    puts("out 1");
 		   if (!data.isEmpty()) {
 			   QJsonObject json;
-			   json["msg"] = QString(data);
+			   json["type"] = "MSG";
+			   json["values"] = QString(data);
+			//    printf("%s\n",data.toStdString().data());
 			   auto msg = QJsonDocument(json).toJson(QJsonDocument::Compact);
 
 			   if (debugging) qDebug() << "Send: " << msg;
 
-			   fpga_instance->call_send_uart_msg(msg);
+			   fpga_instance->call_send_fpga_msg(msg);
 		   }
 	   }
    }
@@ -262,17 +269,21 @@ static void sample_fn(const gpioSample_t *samples, int numSamples)
  * `djtgcfg` would `root` and it can't find the FPGA
  */
 int FPGA::program_device() {
+	// system("unzip -o /home/pi/bistream/bitstream.zip -d /home/pi/bistream/");
+	// int wstatus = system("ustcfg1 prog -f /home/pi/bistream/bitstream.bit");
+	// system("rm -rf /home/pi/bistream/bitstream.bit");
+	// return WEXITSTATUS(wstatus);
 	system("unzip -o /home/pi/bistream/bitstream.zip -d /home/pi/bistream/");
-	// pid_t pid = fork();
-	// if (pid == 0) {
-	// 	setgid(1000);
-	// 	setuid(0);
-	// 	putenv("HOME=/home/pi");
-	// 	execl("/usr/local/bin/ustcfg1", "ustcfg1", "prog", "-f", "/home/pi/bistream/bitstream.bit", NULL);
-	// 	// execl("ustcfg1", "ustcfg1", "prog", "-f", "/home/pi/bistream/bitstream.bit", NULL);
-	// }
-	int wstatus = system("ustcfg1 prog -f /home/pi/bistream/bitstream.bit");
-	// waitpid(pid, &wstatus, 0);
+	pid_t pid = fork();
+	if (pid == 0) {
+		setgid(1000);
+		setuid(1000);
+		putenv("HOME=/home/pi");
+		execl("/usr/bin/djtgcfg", "djtgcfg", "prog", "-d", "Nexys4DDR",
+				"-i", "0", "-f", "/home/pi/bistream/bitstream.bit", NULL);
+	}
+	int wstatus;
+	waitpid(pid, &wstatus, 0);
 	system("rm -rf /home/pi/bistream/bitstream.bit");
 	return WEXITSTATUS(wstatus);
 }
@@ -288,9 +299,6 @@ int FPGA::start_notify() {
 	int notify_handle = gpioNotifyOpen();
 	sprintf(fifo, "/dev/pigpio%d", notify_handle);
 
-	if (init_gpio() != 0) {
-		throw std::runtime_error("GPIO initialization falied!");
-	}
 
 	pig_pid = fork();
 
@@ -320,7 +328,7 @@ int FPGA::start_notify() {
 	if (m_debug) qDebug() << "SerialOpen returned: " << ret;
 
 	monitor_thrd = std::thread(loop_fn);
-	uart_thrd = std::thread(uart_fn, &serial_port);
+	// uart_thrd = std::thread(uart_fn, &serial_port);
 
 	qInfo() << "Notify started";
 	notifying = true;
@@ -345,14 +353,36 @@ int FPGA::end_notify() {
 	return 0;
 }
 
+// void FPGA::readData(){
+// 	mx.lock();
+// 	puts("in 1");
+// 	QByteArray data = serial_port.readAll();
+// 	mx.unlock();
+// 	puts("out 1");
+// 	if (!data.isEmpty()) {
+// 		QJsonObject json;
+// 		json["type"] = "MSG";
+// 		json["values"] = QString(data);
+// 		printf("%s\n",data.toStdString().data());
+// 		auto msg = QJsonDocument(json).toJson(QJsonDocument::Compact);
+
+// 		if (debugging) qDebug() << "Send: " << msg;
+
+// 		call_send_fpga_msg(msg);
+// 	}
+// }
+
 FPGA::FPGA(bool debug) {
 	m_debug = debug;
 	debugging = debug;
 	fpga_instance = this;
-
-	// system("sudo chmod 666 /dev/ttyUSB1");
-	// serial_port.setPortName("/dev/ttyUSB1");
-	// serial_port.setBaudRate(QSerialPort::Baud115200);
+	if (init_gpio() != 0) {
+		throw std::runtime_error("GPIO initialization falied!");
+	}
+	system("sudo chmod 666 /dev/ttyUSB1");
+	// connect(serial_port,&QSerialPort::readyRead,this,FPGA::readData);
+	serial_port.setPortName("/dev/ttyUSB1");
+	serial_port.setBaudRate(QSerialPort::Baud115200);
 }
 
 FPGA::~FPGA() {
@@ -364,9 +394,9 @@ void FPGA::call_send_fpga_msg(QString msg) {
 	emit send_fpga_msg(msg);
 }
 
-void FPGA::call_send_uart_msg(QString msg) {
-	emit send_uart_msg(msg);
-}
+// void FPGA::call_send_uart_msg(QString msg) {
+// 	emit send_fpga_msg(msg);
+// }
 
 int FPGA::write_gpio(int gpio, int level) {
 	if (!notifying) return -1;
@@ -381,7 +411,13 @@ int FPGA::write_gpio(int gpio, int level) {
 int FPGA::write_serial(QByteArray msg) {
 	if (!notifying) return -1;
 
-	return serial_port.write(msg);
+	mx.lock();
+	// puts("in 2");
+	int status = serial_port.write(msg);
+	// printf("status=%d\n",status);
+	mx.unlock();
+	// puts("out 2");
+	return status;
 }
 
 int FPGA::set_soft_clock(int freq_hz) {

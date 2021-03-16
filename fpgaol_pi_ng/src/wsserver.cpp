@@ -7,6 +7,7 @@
 #include <QString>
 #include <QJsonDocument>
 #include <exception>
+#include <iostream>
 
 QT_USE_NAMESPACE
 
@@ -31,7 +32,7 @@ wsServer::~wsServer()
 {
     m_pWebSocketServer->close();
     qDebug() << "wsServer DISCONNECTED!";
-    qDeleteAll(uart_clients.begin(), uart_clients.end());
+    // qDeleteAll(uart_clients.begin(), uart_clients.end());
     qDeleteAll(FPGA_clients.begin(), FPGA_clients.end());
 }
 
@@ -41,13 +42,13 @@ void wsServer::onNewConnection()
 
     QString req_url = pSocket->requestUrl().toString();
 
-    if (req_url.endsWith("/uartws/")) {
+    /*if (req_url.endsWith("/uartws/")) {
         qDebug() << "uart ws connected";
         connect(pSocket, &QWebSocket::textMessageReceived, this, &wsServer::recvUartMessage);
         connect(pSocket, &QWebSocket::binaryMessageReceived, this, &wsServer::processBinaryMessage);
         connect(pSocket, &QWebSocket::disconnected, this, &wsServer::uartSocketDisconnected);
         uart_clients << pSocket;
-    } else if (req_url.endsWith("/ws/")) {
+    } else */if (req_url.endsWith("/ws/")) {
         qDebug() << "FPGA ws connected";
         connect(pSocket, &QWebSocket::textMessageReceived, this, &wsServer::recvFGPAMessage);
         connect(pSocket, &QWebSocket::binaryMessageReceived, this, &wsServer::processBinaryMessage);
@@ -62,23 +63,23 @@ void wsServer::sendFPGAMessage(QString message) {
     }
 }
 
-void wsServer::sendUartMessage(QString message) {
-    for (QWebSocket *pClinet : uart_clients) {
-        pClinet->sendTextMessage(message);
-    }
-}
+// void wsServer::sendUartMessage(QString message) {
+//     for (QWebSocket *pClinet : uart_clients) {
+//         pClinet->sendTextMessage(message);
+//     }
+// }
 
-void wsServer::recvUartMessage(QString message)
-{
-    QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
-    if (m_debug)
-        qDebug() << "uart Message received:" << message;
-    if (pClient) {
-		auto json = QJsonDocument::fromJson(message.toUtf8());
-		QString msg = json["msg"].toString();
-		emit uart_write((msg + "\n").toUtf8());
-    }
-}
+// void wsServer::recvUartMessage(QString message)
+// {
+//     QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
+//     if (m_debug)
+//         qDebug() << "uart Message received:" << message;
+//     if (pClient) {
+// 		auto json = QJsonDocument::fromJson(message.toUtf8());
+// 		QString msg = json["msg"].toString();
+// 		emit uart_write((msg + "\n").toUtf8());
+//     }
+// }
 
 void wsServer::recvFGPAMessage(QString message)
 {
@@ -89,13 +90,16 @@ void wsServer::recvFGPAMessage(QString message)
 		if (m_debug)
 			qDebug() << "FPGA Message received: GPIO: " << json["gpio"] << " level: " << json["level"];
 
-		int gpio = json["gpio"].toInt(), level = (int)json["level"].toBool();
+		int gpio = json["gpio"].toInt();
+        int level;
+        QString msg;
 
 		int ret;
         if(gpio == -1){
             if (emit notify_end() == 0) {
                 QJsonObject reply;
                 QJsonArray _v;
+                level = (int)json["level"].toBool();
                 if (level == 0){
                     qDebug() << "Level: " << json["level"].toBool();
                     reply["type"] = "WF";
@@ -114,7 +118,13 @@ void wsServer::recvFGPAMessage(QString message)
             if (m_debug)
                 qDebug() << "Start Notify returned: " << ret;
         }
+        else if(gpio == -3){
+            msg = (QString)json["level"].toString();
+            printf("%s\n",msg.toStdString().data());
+            ret = emit uart_write((msg + "\n").toUtf8());
+        }
         else if(gpio >= 0){
+            level = (int)json["level"].toBool();
             emit gpio_write(gpio, level);
         }
         else{
@@ -134,16 +144,16 @@ void wsServer::processBinaryMessage(QByteArray message)
     }
 }
 
-void wsServer::uartSocketDisconnected()
-{
-    QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
-    if (m_debug)
-        qDebug() << "uart socketDisconnected:" << pClient;
-    if (pClient) {
-        uart_clients.removeAll(pClient);
-        pClient->deleteLater();
-    }
-}
+// void wsServer::uartSocketDisconnected()
+// {
+//     QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
+//     if (m_debug)
+//         qDebug() << "uart socketDisconnected:" << pClient;
+//     if (pClient) {
+//         uart_clients.removeAll(pClient);
+//         pClient->deleteLater();
+//     }
+// }
 
 void wsServer::FPGASocketDisconnected()
 {

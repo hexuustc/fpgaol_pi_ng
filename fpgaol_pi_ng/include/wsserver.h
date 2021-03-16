@@ -16,7 +16,7 @@ public:
 
 public Q_SLOTS:
     void sendFPGAMessage(QString message);
-    void sendUartMessage(QString message);
+    // void sendUartMessage(QString message);
 
 Q_SIGNALS:
 	int notify_start();
@@ -29,16 +29,16 @@ Q_SIGNALS:
 private Q_SLOTS:
     void onNewConnection();
 
-    void recvUartMessage(QString message);
+    // void recvUartMessage(QString message);
     void recvFGPAMessage(QString message);
 
     void processBinaryMessage(QByteArray message);
-    void uartSocketDisconnected();
+    // void uartSocketDisconnected();
     void FPGASocketDisconnected();
 
 private:
     QWebSocketServer *m_pWebSocketServer;
-    QList<QWebSocket *> uart_clients;
+    // QList<QWebSocket *> uart_clients;
     QList<QWebSocket *> FPGA_clients;
     bool m_debug;
 };
