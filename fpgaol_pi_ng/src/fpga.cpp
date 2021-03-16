@@ -328,7 +328,7 @@ int FPGA::start_notify() {
 	if (m_debug) qDebug() << "SerialOpen returned: " << ret;
 
 	monitor_thrd = std::thread(loop_fn);
-	// uart_thrd = std::thread(uart_fn, &serial_port);
+	uart_thrd = std::thread(uart_fn, &serial_port);
 
 	qInfo() << "Notify started";
 	notifying = true;

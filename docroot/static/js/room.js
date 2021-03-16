@@ -1,4 +1,4 @@
-// version = 1.3
+// version = 1.5
 // global variables
 // FPGAOL_NG_DEV
 var DEBUG_MODE = true;
@@ -35,16 +35,16 @@ $(document).ready(function () {
 
     PI_SERVER_ADDRESS = window.location.host;
     // uart websocket
-    if (DEBUG_MODE) {
-        uartSocket = new WebSocket('ws://' + DEBUG_WS_SERVER + '/uartws/');
-    } else {
-        uartSocket = new WebSocket('ws://' + PI_SERVER_ADDRESS + '/uartws/');
-    }
-    uartSocket.onmessage = function (e) {
-        var data = JSON.parse(e.data);
-        // console.log(data['msg']);
-        term.echo(data['msg']);
-    };
+    // if (DEBUG_MODE) {
+    //     uartSocket = new WebSocket('ws://' + DEBUG_WS_SERVER + '/uartws/');
+    // } else {
+    //     uartSocket = new WebSocket('ws://' + PI_SERVER_ADDRESS + '/uartws/');
+    // }
+    // uartSocket.onmessage = function (e) {
+    //     var data = JSON.parse(e.data);
+    //     // console.log(data['msg']);
+    //     term.echo(data['msg']);
+    // };
     // setup websocket
     if (DEBUG_MODE) {
         notifySocket = new WebSocket(
@@ -64,6 +64,8 @@ $(document).ready(function () {
         } else if (type == 'WF') {
             document.getElementById("download").innerHTML = "Download";
             $("#download").attr("href", "./waveform.vcd");
+        } else if (type == 'MSG') {
+            term.echo(values);
         }
     };
 
@@ -163,7 +165,7 @@ $(document).ready(function () {
                 }
             };
             if (DEBUG_MODE) {
-                xhr.open("POST", 'http://' + DEBUG_HTTP_SERVER + '/upload/?token=' + token);
+                xhr.open("POST", 'http://' + DEBUG_HTTP_SERVER + '/upload/?token=token_debug_ignore');
             } else {
                 xhr.open("POST", '/upload/?token=' + token);
             }
@@ -172,7 +174,12 @@ $(document).ready(function () {
     });
     // uart terminal
     term = $('#terminal').terminal(function (command) {
-        uartSocket.send(JSON.stringify({ 'msg': command }));
+        // notifySocket.send(JSON.stringify({ 'msg': command }));
+        // notifySocket.send(JSON.stringify({
+        //     'gpio': gpio,
+        //     'level': command,
+        // }));
+        sendGpio(-3, command);
     }, { prompt: '>', name: 'test', greetings: 'FPGAOL uart beta 1.0' });
 
 });
