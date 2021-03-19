@@ -13,8 +13,8 @@ class FPGA : public QObject
 	Q_OBJECT
 
 private:
-	// TODO: Do we really need two websockets?
-	QSerialPort serial_port;
+	// QSerialPort serial_port;
+	int serial_port;
 	bool m_debug;
 
 	// Don't need SoftClockThread any more, pigpio can help us do so

@@ -107,31 +107,29 @@ int init_gpio() {
 	return 0;
 }
 
-static void uart_fn(QSerialPort *serial_port) {
-   qInfo() << "Uart thread started\n";
+static void uart_fn(int serial_port) {
+	qInfo() << "Uart thread started\n";
 
-   while (true) {
-	//    std::cout << notifying << std::endl;
-	   if (!notifying) return;
-	   if (serial_port->waitForReadyRead(500)) {
-		   mx.lock();
-		   puts("in 1");
-		   QByteArray data = serial_port->readAll();
-		   mx.unlock();
-		//    puts("out 1");
-		   if (!data.isEmpty()) {
-			   QJsonObject json;
-			   json["type"] = "MSG";
-			   json["values"] = QString(data);
-			   printf("%s\n",data.toStdString().data());
-			   auto msg = QJsonDocument(json).toJson(QJsonDocument::Compact);
+	while (true) {
+		if (!notifying) return;
+			char data[1000];
+			gpioDelay(1000);
+			mx.lock();
+			int available_data = serDataAvailable(serial_port);
+			if(available_data){
+				serRead(serial_port, data, available_data);
+				data[available_data] = '\0';
+				QJsonObject json;
+				json["type"] = "MSG";
+				json["values"] = QString(data);
+				auto msg = QJsonDocument(json).toJson(QJsonDocument::Compact);
 
-			   if (debugging) qDebug() << "Send: " << msg;
+				if (debugging) qDebug() << "Send: " << msg;
 
-			   fpga_instance->call_send_fpga_msg(msg);
-		   }
-	   }
-   }
+				fpga_instance->call_send_fpga_msg(msg);
+			}
+			mx.unlock();
+	}
 }
 
 /*
@@ -326,11 +324,11 @@ int FPGA::start_notify() {
 	ret = gpioSetGetSamplesFunc(sample_fn, GPIO_MASK | WD_MASK);
 	if (m_debug) qDebug() << "SetGetSFN returned: " << ret;
 
-	ret = (int)serial_port.open(QIODevice::ReadWrite);
-	if (m_debug) qDebug() << "SerialOpen returned: " << ret;
+	serial_port = serOpen("/dev/serial0", 115200, NULL);
+	if (m_debug) qDebug() << "SerialOpen returned: " << serial_port;
 
 	monitor_thrd = std::thread(loop_fn);
-	uart_thrd = std::thread(uart_fn, &serial_port);
+	uart_thrd = std::thread(uart_fn, serial_port);
 
 	qInfo() << "Notify started";
 	notifying = true;
@@ -346,7 +344,7 @@ int FPGA::end_notify() {
 		uart_thrd.join();
 		gpioNotifyClose(notify_handle);
 		gpioWrite_Bits_0_31_Clear(SW_MASK);
-		serial_port.close();
+		serClose(serial_port);
 		char cmd[50];
 		sprintf(cmd, "sudo kill -9 %d", pig_pid);
 		system(cmd);
@@ -390,10 +388,10 @@ FPGA::FPGA(bool debug) {
 		throw std::runtime_error("GPIO initialization falied!");
 	}
 	std::cout << "Init" << std::endl;
-	system("sudo chmod 666 /dev/serial0");
+	// system("sudo chmod 666 /dev/serial0");
 	// connect(serial_port,&QSerialPort::readyRead,this,FPGA::readData);
-	serial_port.setPortName("/dev/serial0");
-	serial_port.setBaudRate(QSerialPort::Baud115200);
+	// serial_port.setPortName("/dev/serial0");
+	// serial_port.setBaudRate(QSerialPort::Baud115200);
 }
 
 FPGA::~FPGA() {
@@ -404,10 +402,6 @@ FPGA::~FPGA() {
 void FPGA::call_send_fpga_msg(QString msg) {
 	emit send_fpga_msg(msg);
 }
-
-// void FPGA::call_send_uart_msg(QString msg) {
-// 	emit send_fpga_msg(msg);
-// }
 
 int FPGA::write_gpio(int gpio, int level) {
 	if (!notifying) return -1;
@@ -423,11 +417,8 @@ int FPGA::write_serial(QByteArray msg) {
 	if (!notifying) return -1;
 
 	mx.lock();
-	// puts("in 2");
-	int status = serial_port.write(msg);
-	// printf("status=%d\n",status);
+	int status = serWrite(serial_port, (char*)msg.toStdString().data(), msg.toStdString().length());
 	mx.unlock();
-	// puts("out 2");
 	return status;
 }
 
