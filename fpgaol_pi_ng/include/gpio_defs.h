@@ -1,4 +1,5 @@
-#ifndef GPIO_DEFS
+
+/*#ifndef GPIO_DEFS
 #define GPIO_DEFS
 
 #include<stdint.h>
@@ -23,7 +24,7 @@ const uint32_t BUTTON_MASK = (1 << 23);
 
 const uint32_t GPIO_MASK = LED_MASK | SW_MASK | SEG_MASK | BUTTON_MASK;
 
-#endif
+#endif*/
 // #ifndef GPIO_DEFS
 // #define GPIO_DEFS
 

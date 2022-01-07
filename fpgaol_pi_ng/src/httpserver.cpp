@@ -17,6 +17,20 @@ handler::~handler() {
     delete staticFileController;
 }
 
+int WriteJson(char* filename, QJsonObject json){
+    QFile file(filename);
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text)){
+        qDebug() << "File open error";
+        return -1;
+    }
+    else{
+        QTextStream out(&file);
+        out << QJsonDocument(json).toJson(QJsonDocument::Compact);
+        file.close();
+    }
+    return 0;
+}
+
 void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResponse& response) {
     QByteArray path=request.getPath();
     qDebug("RequestMapper: path=%s",path.data());
@@ -33,7 +47,6 @@ void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResp
     if (path == "/set/") {
         token = request_token;
         qDebug("(set)now token is:%s", token.data());
-        //qDebug("path is in the location /set/");
         response.setStatus(200);
         response.write("ok", true);
         return;
@@ -43,8 +56,26 @@ void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResp
         qDebug("(unset)now token is:%s", token.data());
         response.setStatus(200);
         response.write("ok", true);
-        qDebug("now ready to restart");
-        exit(1);
+        // 当前机器被使用情况统计
+        char filename[20] = "status.json";
+        QFile file(filename);
+        QString val;
+        QJsonObject json;
+        QJsonObject newjson;
+        if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            newjson["starttime"] = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss");
+            newjson["usedcount"] = 1;
+            WriteJson(filename, newjson);
+        } else {
+            val = file.readAll();
+            file.close();
+            QJsonDocument d = QJsonDocument::fromJson(val.toUtf8());
+            json = d.object();
+            int num = json["usedcount"].toInt();
+            newjson["usedcount"] = num+1;
+            newjson["starttime"] = json["starttime"].toString();
+            WriteJson(filename, newjson);
+        }
         return;
     }
     if (path == "/restart/") {
@@ -53,7 +84,26 @@ void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResp
         qDebug("path is in the location /restart/");
         response.setStatus(200);
         response.write("Restarting...", true);
+        gpioTerminate();
         exit(1);
+    }
+    if (path == "/status/") {
+        response.setStatus(201);
+        char filename[20] = "status.json";
+        QFile file(filename);
+        QString val;
+        QJsonObject json;
+        // if not generate new use record
+        if(!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            response.write("no new status", true);
+        } else {
+            val = file.readAll();
+            file.close();
+            QJsonDocument d = QJsonDocument::fromJson(val.toUtf8());
+            json = d.object();
+            response.write(d.toJson(), true);
+            remove(filename);
+        }
     }
     if (path.startsWith("/upload"))
     {

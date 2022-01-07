@@ -19,7 +19,7 @@ public Q_SLOTS:
     // void sendUartMessage(QString message);
 
 Q_SIGNALS:
-	int notify_start();
+	int notify_start(int inputn, int outputn, int segn);
 	int notify_end();
 	int gpio_write(int gpio, int level);
 	int uart_write(QByteArray msg);

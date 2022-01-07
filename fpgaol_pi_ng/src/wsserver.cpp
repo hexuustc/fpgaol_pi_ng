@@ -11,21 +11,23 @@
 
 QT_USE_NAMESPACE
 
-wsServer::wsServer(quint16 port, bool debug, QObject *parent) :
-    QObject(parent),
-    m_pWebSocketServer(new QWebSocketServer(QStringLiteral("FPAGOL WebSocket Server"),
-                                            QWebSocketServer::NonSecureMode, this)),
-    m_debug(debug)
+wsServer::wsServer(quint16 port, bool debug, QObject *parent) : QObject(parent),
+                                                                m_pWebSocketServer(new QWebSocketServer(QStringLiteral("FPAGOL WebSocket Server"),
+                                                                                                        QWebSocketServer::NonSecureMode, this)),
+                                                                m_debug(debug)
 {
-    if (m_pWebSocketServer->listen(QHostAddress::Any, port)) {
+    if (m_pWebSocketServer->listen(QHostAddress::Any, port))
+    {
         if (m_debug)
             qDebug() << "FPAGOL WebSocket Server listening on port" << port;
         connect(m_pWebSocketServer, &QWebSocketServer::newConnection,
                 this, &wsServer::onNewConnection);
         connect(m_pWebSocketServer, &QWebSocketServer::closed, this, &wsServer::closed);
-    } else {
-		throw std::runtime_error("Ws server failed to start!");
-	}
+    }
+    else
+    {
+        throw std::runtime_error("Ws server failed to start!");
+    }
 }
 
 wsServer::~wsServer()
@@ -48,7 +50,9 @@ void wsServer::onNewConnection()
         connect(pSocket, &QWebSocket::binaryMessageReceived, this, &wsServer::processBinaryMessage);
         connect(pSocket, &QWebSocket::disconnected, this, &wsServer::uartSocketDisconnected);
         uart_clients << pSocket;
-    } else */if (req_url.endsWith("/ws/")) {
+    } else */
+    if (req_url.endsWith("/ws/"))
+    {
         qDebug() << "FPGA ws connected";
         connect(pSocket, &QWebSocket::textMessageReceived, this, &wsServer::recvFGPAMessage);
         connect(pSocket, &QWebSocket::binaryMessageReceived, this, &wsServer::processBinaryMessage);
@@ -57,8 +61,10 @@ void wsServer::onNewConnection()
     }
 }
 
-void wsServer::sendFPGAMessage(QString message) {
-    for (QWebSocket *pClinet : FPGA_clients) {
+void wsServer::sendFPGAMessage(QString message)
+{
+    for (QWebSocket *pClinet : FPGA_clients)
+    {
         pClinet->sendTextMessage(message);
     }
 }
@@ -83,25 +89,30 @@ void wsServer::sendFPGAMessage(QString message) {
 
 void wsServer::recvFGPAMessage(QString message)
 {
+    qDebug() <<"wsServer::recvFGPAMessage";
     QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
-    if (pClient) {
-		auto json = QJsonDocument::fromJson(message.toUtf8());
+    if (pClient)
+    {
+        auto json = QJsonDocument::fromJson(message.toUtf8());
 
-		if (m_debug)
-			qDebug() << "FPGA Message received: GPIO: " << json["gpio"] << " level: " << json["level"];
+        if (m_debug)
+            qDebug() << "FPGA Message received: GPIO: " << json["id"] << " level: " << json["level"];
 
-		int gpio = json["gpio"].toInt();
+        int gpio = json["id"].toInt();
         int level;
         QString msg;
 
-		int ret;
-        if(gpio == -1){
+        int ret;
+        if (gpio == -1)
+        {
             qDebug() << "END notify";
-            if (emit notify_end() == 0) {
+            if (emit notify_end() == 0)
+            {
                 QJsonObject reply;
                 QJsonArray _v;
                 level = (int)json["level"].toBool();
-                if (level == 0){
+                if (level == 0)
+                {
                     qDebug() << "Level: " << json["level"].toBool();
                     reply["type"] = "WF";
                     reply["values"] = _v;
@@ -113,22 +124,28 @@ void wsServer::recvFGPAMessage(QString message)
                 }
             }
         }
-        else if(gpio == -2){
-            ret = emit notify_start();
-
+        else if (gpio == -2)
+        {
+            int inputn = json["inputn"].toInt();
+            int outputn = json["outputn"].toInt();
+            int segn = json["segn"].toInt();
+            ret = emit notify_start(inputn, outputn, segn);
             if (m_debug)
                 qDebug() << "Start Notify returned: " << ret;
         }
-        else if(gpio == -3){
+        else if (gpio == -3)
+        {
             msg = (QString)json["level"].toString();
-            printf("%s\n",msg.toStdString().data());
+            printf("%s\n", msg.toStdString().data());
             ret = emit uart_write((msg + "\n").toUtf8());
         }
-        else if(gpio >= 0){
+        else if (gpio >= 0)
+        {
             level = (int)json["level"].toBool();
             emit gpio_write(gpio, level);
         }
-        else{
+        else
+        {
             qDebug() << "WARNING: reach undefined place!!!!!!!!!!!!!!!";
         }
         // pClient->sendTextMessage(message);
@@ -140,7 +157,8 @@ void wsServer::processBinaryMessage(QByteArray message)
     QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
     if (m_debug)
         qDebug() << "Binary Message received:" << message;
-    if (pClient) {
+    if (pClient)
+    {
         pClient->sendBinaryMessage(message);
     }
 }
@@ -161,8 +179,9 @@ void wsServer::FPGASocketDisconnected()
     QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
     if (m_debug)
         qDebug() << "FPGA socketDisconnected:" << pClient;
-    if (pClient) {
-		emit notify_end();
+    if (pClient)
+    {
+        emit notify_end();
 
         FPGA_clients.removeAll(pClient);
         pClient->deleteLater();

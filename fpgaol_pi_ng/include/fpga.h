@@ -1,12 +1,37 @@
 #ifndef FPGA_H
 #define FPGA_H
 
+#include <stdlib.h>
+#include <time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/wait.h>
+#include <fcntl.h>
 #include <string>
+
+#include <exception>
 #include <thread>
+#include <iostream>
+#include <bitset>
+#include "QtWebSockets/qwebsocket.h"
+#include <QtCore/QDebug>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QString>
+#include <QJsonDocument>
+#include <QIODevice>
+#include <QMutex>
+#include <QFile>
+#include <QDateTime>
+
 #include <QSerialPort>
 #include <QByteArray>
-#include <QString>
 #include <QWebSocket>
+#include "pigpio.h"
+#include "gpio_defs.h"
+
+#define MAX_GPIO 50
 
 class FPGA : public QObject
 {
@@ -33,7 +58,7 @@ public:
 
 	static int program_device();
 public slots:
-	int start_notify();
+	int start_notify(int inputn, int outputn, int segn);
 
 	int end_notify();
 
