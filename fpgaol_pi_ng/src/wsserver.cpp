@@ -9,12 +9,15 @@
 #include <exception>
 #include <iostream>
 
+#include "periph.h"
+#include "peripherals.h"
+
 QT_USE_NAMESPACE
 
 wsServer::wsServer(quint16 port, bool debug, QObject *parent) : QObject(parent),
-                                                                m_pWebSocketServer(new QWebSocketServer(QStringLiteral("FPAGOL WebSocket Server"),
-                                                                                                        QWebSocketServer::NonSecureMode, this)),
-                                                                m_debug(debug)
+	m_pWebSocketServer(new QWebSocketServer(QStringLiteral("FPAGOL WebSocket Server"),
+											QWebSocketServer::NonSecureMode, this)),
+	m_debug(debug)
 {
     if (m_pWebSocketServer->listen(QHostAddress::Any, port))
     {
@@ -44,23 +47,17 @@ void wsServer::onNewConnection()
 
     QString req_url = pSocket->requestUrl().toString();
 
-    /*if (req_url.endsWith("/uartws/")) {
-        qDebug() << "uart ws connected";
-        connect(pSocket, &QWebSocket::textMessageReceived, this, &wsServer::recvUartMessage);
-        connect(pSocket, &QWebSocket::binaryMessageReceived, this, &wsServer::processBinaryMessage);
-        connect(pSocket, &QWebSocket::disconnected, this, &wsServer::uartSocketDisconnected);
-        uart_clients << pSocket;
-    } else */
     if (req_url.endsWith("/ws/"))
     {
         qDebug() << "FPGA ws connected";
-        connect(pSocket, &QWebSocket::textMessageReceived, this, &wsServer::recvFGPAMessage);
+        connect(pSocket, &QWebSocket::textMessageReceived, this, &wsServer::recvFPGAMessage);
         connect(pSocket, &QWebSocket::binaryMessageReceived, this, &wsServer::processBinaryMessage);
         connect(pSocket, &QWebSocket::disconnected, this, &wsServer::FPGASocketDisconnected);
         FPGA_clients << pSocket;
     }
 }
 
+// from hardware to frontend
 void wsServer::sendFPGAMessage(QString message)
 {
     for (QWebSocket *pClinet : FPGA_clients)
@@ -69,27 +66,10 @@ void wsServer::sendFPGAMessage(QString message)
     }
 }
 
-// void wsServer::sendUartMessage(QString message) {
-//     for (QWebSocket *pClinet : uart_clients) {
-//         pClinet->sendTextMessage(message);
-//     }
-// }
-
-// void wsServer::recvUartMessage(QString message)
-// {
-//     QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
-//     if (m_debug)
-//         qDebug() << "uart Message received:" << message;
-//     if (pClient) {
-// 		auto json = QJsonDocument::fromJson(message.toUtf8());
-// 		QString msg = json["msg"].toString();
-// 		emit uart_write((msg + "\n").toUtf8());
-//     }
-// }
-
-void wsServer::recvFGPAMessage(QString message)
+// from frontend webpage to hardware
+void wsServer::recvFPGAMessage(QString message)
 {
-    qDebug() <<"wsServer::recvFGPAMessage";
+    qDebug() <<"wsServer::recvFPGAMessage";
     QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
     if (pClient)
     {
@@ -98,13 +78,15 @@ void wsServer::recvFGPAMessage(QString message)
         if (m_debug)
             qDebug() << "FPGA Message received: GPIO: " << json["id"] << " level: " << json["level"];
 
-        int gpio = json["id"].toInt();
+		int id = json["id"].toInt();
+
         int level;
         QString msg;
 
         int ret;
-        if (gpio == -1)
+        if (id == -1)
         {
+			// FINISH
             qDebug() << "END notify";
             if (emit notify_end() == 0)
             {
@@ -124,25 +106,42 @@ void wsServer::recvFGPAMessage(QString message)
                 }
             }
         }
-        else if (gpio == -2)
+        else if (id == -2)
         {
-            int inputn = json["inputn"].toInt();
-            int outputn = json["outputn"].toInt();
-            int segn = json["segn"].toInt();
-            ret = emit notify_start(inputn, outputn, segn);
+			// INIT
+			// parse the init json that contains customized peripheral information
+			// after Periph initialization and GPIO allocation, the XDC constraint
+			// (or equivalent json, or an error) is return to frontend
+            //int inputn = json["inputn"].toInt();
+            //int outputn = json["outputn"].toInt();
+            //int segn = json["segn"].toInt();
+            ret = emit notify_start(message);
             if (m_debug)
                 qDebug() << "Start Notify returned: " << ret;
         }
-        else if (gpio == -3)
+        else if (id == -3)
         {
-            msg = (QString)json["level"].toString();
-            printf("%s\n", msg.toStdString().data());
-            ret = emit uart_write((msg + "\n").toUtf8());
-        }
-        else if (gpio >= 0)
-        {
-            level = (int)json["level"].toBool();
-            emit gpio_write(gpio, level);
+			// ordinary notification message
+			// find the corresponding peripheral and notify it
+			int type = json["type"].toInt();
+			int idx = json["idx"].toInt();
+			// on the interface we'd better pay more attention to corner cases
+			// as frontend users might be hostile
+			std::map<int, std::vector<Periph> >::iterator itr = periph_arr.find(type);
+			if (itr != periph_arr.end()) {
+				std::vector<Periph>&v = itr->second;
+				if ((uint32_t)idx < v.size()) {
+					// message is customized with (maybe) unique entries, 
+					// so only plausible way is to pass the msg(or json) itself
+					// TODO: consider using emit and signal here
+					ret = v[idx].on_notify(message);
+					if (ret)
+						qDebug() << "WARN: non-zero return on peripheral " \
+							<< type << ":" << idx << " notify";
+				} else
+					qDebug() << "ERR: peripheral " << type << " index out of range!";
+			} else
+				qDebug() << "ERR: there is no type " << type << " peripheral!";
         }
         else
         {
@@ -162,17 +161,6 @@ void wsServer::processBinaryMessage(QByteArray message)
         pClient->sendBinaryMessage(message);
     }
 }
-
-// void wsServer::uartSocketDisconnected()
-// {
-//     QWebSocket *pClient = qobject_cast<QWebSocket *>(sender());
-//     if (m_debug)
-//         qDebug() << "uart socketDisconnected:" << pClient;
-//     if (pClient) {
-//         uart_clients.removeAll(pClient);
-//         pClient->deleteLater();
-//     }
-// }
 
 void wsServer::FPGASocketDisconnected()
 {

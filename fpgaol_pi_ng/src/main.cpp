@@ -50,10 +50,10 @@ int main(int argc, char *argv[])
 			fpga, &FPGA::start_notify);
 	QObject::connect(ws_server, &wsServer::notify_end,
 			fpga, &FPGA::end_notify);
-	QObject::connect(ws_server, &wsServer::gpio_write,
-			fpga, &FPGA::write_gpio);
-	QObject::connect(ws_server, &wsServer::uart_write,
-			fpga, &FPGA::write_serial);
+	//QObject::connect(ws_server, &wsServer::gpio_write,
+			//fpga, &FPGA::write_gpio);
+	//QObject::connect(ws_server, &wsServer::uart_write,
+			//fpga, &FPGA::write_serial);
 	QObject::connect(fpga, &FPGA::send_fpga_msg,
 			ws_server, &wsServer::sendFPGAMessage);
 	// QObject::connect(fpga, &FPGA::send_uart_msg,

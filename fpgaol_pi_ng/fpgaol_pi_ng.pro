@@ -9,14 +9,19 @@ LIBS += -lpigpio
 
 HEADERS += \
            include/httpserver.h \
-           include/gpio_defs.h \
+           include/io_defs_hal.h \
            include/fpga.h \
-           include/wsserver.h
+           include/wsserver.h \
+           include/periph.h \
+           include/peripherals.h
 
 SOURCES += src/main.cpp \
+           src/io_defs_hal.cpp \
            src/httpserver.cpp \
            src/fpga.cpp \
-           src/wsserver.cpp
+           src/wsserver.cpp \
+           src/periph.cpp \
+           src/peripherals.cpp
 
 
 #---------------------------------------------------------------------------------------

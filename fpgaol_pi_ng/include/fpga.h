@@ -29,7 +29,7 @@
 #include <QByteArray>
 #include <QWebSocket>
 #include "pigpio.h"
-#include "gpio_defs.h"
+#include "io_defs_hal.h"
 
 #define MAX_GPIO 50
 
@@ -44,7 +44,7 @@ private:
 
 	// Don't need SoftClockThread any more, pigpio can help us do so
 	std::thread monitor_thrd;
-	std::thread uart_thrd;
+	//std::thread uart_thrd;
 public:
 
 	// Instantiated upon successfully open WebSocket connections
@@ -58,13 +58,13 @@ public:
 
 	static int program_device();
 public slots:
-	int start_notify(int inputn, int outputn, int segn);
+	int start_notify(QString msg);
 
 	int end_notify();
 
 	// Write a certain gpio
 	// Returns: return code of `pigpio.write`, 0 if successful
-	int write_gpio(int gpio, int level);
+	//int write_gpio(int gpio, int level);
 
 	// Write to the serial
 	// Returns: Number of bytes written
@@ -72,7 +72,7 @@ public slots:
 
 	// Set soft clock at certain frequecy, will use `gpioWaveTxSend`
 	// Returns: 0 if successful
-	int set_soft_clock(int freq_hz);
+	//int set_soft_clock(int freq_hz);
 
 signals:
 	void send_fpga_msg(QString msg);
