@@ -22,6 +22,11 @@ void outputMessage(QtMsgType type, const QMessageLogContext &context, const QStr
             text = QString("Fatal:");
     }
 
+	if (QString(context.file).contains("QtWebApp")) {
+		mutex.unlock();
+		return;
+	}
+
     QString context_info = QString("File:(%1) Line:(%2)").arg(QString(context.file)).arg(context.line);
     QString current_date_time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss ddd");
     QString current_date = QString("(%1)").arg(current_date_time);
@@ -29,7 +34,8 @@ void outputMessage(QtMsgType type, const QMessageLogContext &context, const QStr
 
     QFile file("/home/pi/log.txt");
     file.open(QIODevice::WriteOnly | QIODevice::Append);
-    QTextStream text_stream(&file);
+    //QTextStream text_stream(&file);
+	QTextStream text_stream(stdout);
     text_stream << message << "\r\n";
     file.flush();
     file.close();

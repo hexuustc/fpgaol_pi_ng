@@ -1,7 +1,7 @@
 // version = 1.6
 // global variables
 // FPGAOL_NG_DEV
-var DEBUG_MODE = true;
+var DEBUG_MODE = false;
 var DEBUG_HTTP_SERVER = "127.0.0.1:8080";
 var DEBUG_WS_SERVER = "127.0.0.1:8090";
 
@@ -12,7 +12,16 @@ var PI_SERVER_ADDRESS;
 
 var hexPlayDigits = [];
 
-var programming = false;
+var hw_init_json = JSON.stringify({
+	'id': -2,
+	'periphs': [{
+			'type': 'LED',
+			'idx' : 1,
+		}, {
+			'type': 'BTN',
+			'idx' : 1,
+		}], 
+});
 
 function GetRequest() {
     var url = location.search;
@@ -60,18 +69,16 @@ $(document).ready(function () {
         var data = JSON.parse(e.data);
         var type = data['type'];
         var values = data['values'];
-        if (type == 'Update') {
-            jsoninfo = JSON.parse(values)
-            for (var i = 0; i < jsoninfo.length; i++) {
-                setstatus(jsoninfo[i].id, jsoninfo[i].val)
-            }
-        }
-        else if (type == 'WF') {
+        if (type == 'LED') {
+            setLed(values);
+        } else if (type == 'SEG') {
+            setSeg(values);
+        } else if (type == 'WF') {
             document.getElementById("download").innerHTML = "Download";
             $("#download").attr("href", "./waveform.vcd");
         } else if (type == 'MSG') {
-            term.echo(values, { newline: false });
-            console.log("term has echo");
+			term.write(values);
+			console.log("term output");
         }
         console.log("echo end");
     };
@@ -93,40 +100,36 @@ $(document).ready(function () {
     });
     $("#bitstream").change(function () {
         $("#file-name").val($("#bitstream").val());
-        if (programming == false)
-            $("#upload-button").removeAttr("disabled");
-
     });
 
-    for (var i = 0; i < 8; ++i) {
-        $("#sw" + i).change(function () {
-            for (var i = 0; i < 8; ++i) {
-                sendGpio(i, $("#sw" + i).prop("checked"));
-            }
-        });
-    }
+    //for (var i = 0; i < 8; ++i) {
+        //$("#sw" + i).change(function () {
+            //for (var i = 0; i < 8; ++i) {
+                //sendGpio(i, $("#sw" + i).prop("checked"));
+            //}
+        //});
+    //}
 
-    // soft clock
-    $(".dropdown-item0").click(function (e) {
-        var v = e.currentTarget.getAttribute('val');
-        var t = e.currentTarget.getAttribute('text');
-        $("#clock0dropdownMenuButton").text(t);
-        sendGpio(-3, v);
-    });
+    //// soft clock
+    //$(".dropdown-item0").click(function (e) {
+        //var v = e.currentTarget.getAttribute('val');
+        //var t = e.currentTarget.getAttribute('text');
+        //$("#clock0dropdownMenuButton").text(t);
+        //sendGpio(-3, v);
+    //});
 
-    // fpgabtn
-    $("#fpgabtn").mouseup(function (e) {
-        sendGpio(8, false);
-    });
-    $("#fpgabtn").mousedown(function (e) {
-        sendGpio(8, true);
-    });
+    //// fpgabtn
+    //$("#fpgabtn").mouseup(function (e) {
+        //sendGpio(8, false);
+    //});
+    //$("#fpgabtn").mousedown(function (e) {
+        //sendGpio(8, true);
+    //});
 
     // Handle file upload.
     var progress = $("#progress");
     var filestatus = $("#filestatus");
     var statustext = $("#responsetext");
-
 
     $("#upload-button").click(function () {
         sendGpio(-1, true); // Stop notification
@@ -139,9 +142,7 @@ $(document).ready(function () {
             fd.append('bitstream', zipped_file);
             fd.append('judge', 'normal');
             var xhr = new XMLHttpRequest();
-            progress.attr("style", "width:0%");
             xhr.upload.onprogress = function (e) {
-                programming = true;
                 $("#upload-button").attr("disabled", "false");
                 filestatus.removeClass("alert-danger");
                 filestatus.removeClass("alert-success");
@@ -149,7 +150,6 @@ $(document).ready(function () {
                 progress.addClass("progress-bar-animated");
                 if (e.lengthComputable) {
                     progress.attr("style", "width:" + e.loaded / e.total * 100 + "%");
-                    console.log("progress updated")
                     statustext.text("Uploading bitstream file");
                     if (e.loaded >= e.total) {
                         statustext.text("Programming device");
@@ -168,9 +168,9 @@ $(document).ready(function () {
                         filestatus.removeClass("alert-danger");
                         filestatus.removeClass("alert-info");
                         filestatus.addClass("alert-success");
-                        sendGpio(-2, false);
+						sendJson(hw_init_json);
+                        //sendGpio(-2, false);
                     } else {
-                        programming = false;
                         $("#upload-button").removeAttr("disabled");
                         filestatus.removeClass("alert-success");
                         filestatus.removeClass("alert-info");
@@ -186,16 +186,21 @@ $(document).ready(function () {
             xhr.send(fd);
         });
     });
-    // uart terminal
-    term = $('#terminal').terminal(function (command) {
-        // notifySocket.send(JSON.stringify({ 'msg': command }));
-        // notifySocket.send(JSON.stringify({
-        //     'gpio': gpio,
-        //     'level': command,
-        // }));
-        sendGpio(-3, command);
-    }, { prompt: '>', name: 'test', greetings: 'FPGAOL uart beta 1.0' });
-
+	// new xterm.js terminal
+	term = new Terminal();
+	term.open(document.getElementById('xterm'));
+	term.write('\x1B[1;1mFPGAOL \x1B[1;1;36mUART \x1B[1;1;32mxterm\x1B[1;1;33m.\x1B[1;1;31mjs \x1B[1;1;35m1.1\x1B[0m\r\n')
+	term.onData((val) => {
+		//term.write(val);
+		//sendGpio(-3, val);
+	})
+	// start data acquisition before web programming,
+	// because programming may has been done in Vivado XVC
+	setTimeout(function(){
+		sendGpio(-1, true);
+		clear_everything();
+		sendJson(hw_init_json);
+	}, 1000);
 });
 
 function setLed(values) {
@@ -211,11 +216,15 @@ function setSeg(values) {
     }
 }
 
-function sendGpio(id, level) {
+function sendGpio(gpio, level) {
     notifySocket.send(JSON.stringify({
-        'id': id,
+        'id': gpio,
         'level': level,
     }));
+}
+
+function sendJson(json) {
+    notifySocket.send(json);
 }
 
 function clear_everything() {
@@ -251,17 +260,3 @@ function clear_everything() {
  *     }));
  * });
  */
-
-
-///////////////////////////////////////////////////////////////////////////////////////////
-
-function somethingclicked(id, val) {
-    sendGpio(id, val)
-}
-function setstatus(id, val) {
-    console.log("herers")
-    switch ($("#control" + id)[0].getAttribute("newfpgatype")) {
-        case "LED":
-            $("#control" + id)[0].children[0].children[0].checked = val
-    }
-}

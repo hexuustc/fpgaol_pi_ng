@@ -10,15 +10,13 @@
 
 int main(int argc, char *argv[])
 {
-
 	qInstallMessageHandler(outputMessage);
-    /*����ʹ�÷���*/
-/*
+
     qDebug("This is a debug message");
     qWarning("This is a warning message");
     qCritical("This is a critical message");
-    qFatal("This is a fatal message");
-*/
+    //qFatal("This is a fatal message");
+
     QCoreApplication app(argc, argv);
 
 	qInfo() << "FPGAOL_PI_NG compiled at " << __TIME__ << ", " << __DATE__;
@@ -33,7 +31,7 @@ int main(int argc, char *argv[])
 	FPGA *fpga;
 
 	try {
-		ws_server = new wsServer(8090, false, &app);
+		ws_server = new wsServer(8090, true, &app);
 	} catch (const std::exception& e) {
 		qWarning() << (e.what());
 		return 255;

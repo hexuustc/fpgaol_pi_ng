@@ -2,7 +2,7 @@
 TARGET = fpgaol_pi_ng
 TEMPLATE = app
 QT = core network websockets serialport
-CONFIG += console
+CONFIG += console debug
 INCLUDEPATH += include/
 
 LIBS += -lpigpio

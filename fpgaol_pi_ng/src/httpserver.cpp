@@ -5,7 +5,7 @@
 
 handler::handler() {
     // Configure static file controller
-    fileSettings.setValue("path", "/home/pi/docroot"); // Using absolute path when sudo
+    fileSettings.setValue("path", "/home/pi/petergu/fpgaol_pi_ng/docroot"); // Using absolute path when sudo
     fileSettings.setValue("encoding", "UTF-8");
     fileSettings.beginGroup("docroot");
     fileSettings.endGroup();
@@ -118,7 +118,7 @@ void handler::service(stefanfrings::HttpRequest& request, stefanfrings::HttpResp
         response.setHeader("Access-Control-Allow-Headers", "x-requested-with");
         response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
         if (method == "POST") {
-            system("rm -rf /home/pi/docroot/waveform.vcd");
+            system("rm -rf /home/pi/petergu/fpgaol_pi_ng/docroot/waveform.vcd");
             qDebug("removed useless vcd file");
             QTemporaryFile* file=request.getUploadedFile("bitstream");
             QDateTime now = QDateTime::currentDateTime();

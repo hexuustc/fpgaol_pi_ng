@@ -11,7 +11,7 @@ class wsServer : public QObject
 {
     Q_OBJECT
 public:
-    explicit wsServer(quint16 port, bool debug = false, QObject *parent = nullptr);
+    explicit wsServer(quint16 port, bool debug = true, QObject *parent = nullptr);
     ~wsServer();
 
 public Q_SLOTS:

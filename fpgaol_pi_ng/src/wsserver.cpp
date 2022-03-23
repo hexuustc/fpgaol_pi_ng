@@ -75,8 +75,8 @@ void wsServer::recvFPGAMessage(QString message)
     {
         auto json = QJsonDocument::fromJson(message.toUtf8());
 
-        if (m_debug)
-            qDebug() << "FPGA Message received: GPIO: " << json["id"] << " level: " << json["level"];
+		if (m_debug)
+            qDebug() << "FPGA Message received: ID: " << json["id"] << " level: " << json["level"];
 
 		int id = json["id"].toInt();
 
@@ -90,20 +90,20 @@ void wsServer::recvFPGAMessage(QString message)
             qDebug() << "END notify";
             if (emit notify_end() == 0)
             {
-                QJsonObject reply;
-                QJsonArray _v;
-                level = (int)json["level"].toBool();
-                if (level == 0)
-                {
-                    qDebug() << "Level: " << json["level"].toBool();
-                    reply["type"] = "WF";
-                    reply["values"] = _v;
-                    auto msg = QJsonDocument(reply).toJson(QJsonDocument::Compact);
+				QJsonObject reply;
+				//QJsonArray _v;
+				level = (int)json["level"].toBool();
+				if (level == 0)
+				{
+					qDebug() << "Level: " << json["level"].toBool();
+					reply["type"] = "WF";
+					//reply["values"] = _v;
+					auto msg = QJsonDocument(reply).toJson(QJsonDocument::Compact);
 
-                    qDebug() << "Send: " << msg;
+					qDebug() << "Send: " << msg;
 
-                    pClient->sendTextMessage(msg);
-                }
+					pClient->sendTextMessage(msg);
+				}
             }
         }
         else if (id == -2)

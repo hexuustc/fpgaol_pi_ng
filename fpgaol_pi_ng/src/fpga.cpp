@@ -337,6 +337,15 @@ int FPGA::program_device()
  */
 int FPGA::start_notify(QString msg)
 {
+	// TODO: init orders?
+	if (gpioInitialise() < 0)
+		qDebug() << "ERR: gpioInitialise returned negative!";
+	//start_watchdog();
+	//notify_handle = gpioNotifyOpen();
+	//qDebug() << "pigpio notify_handle: " << notify_handle;
+	//char fifo[20];
+	//sprintf(fifo, "/dev/pigpio%d", notify_handle);
+
 	platform_dependent_gpio_init();
 
 	int pipin_cnt = 0;
@@ -375,32 +384,25 @@ int FPGA::start_notify(QString msg)
 		}
 	}
 
-	if (gpioInitialise() < 0)
-		qDebug() << "ERR: gpioInitialise returned negative!";
-
 	// VCD monitor and generator
-	//start_watchdog();
-	char fifo[20];
-	notify_handle = gpioNotifyOpen();
-	sprintf(fifo, "/dev/pigpio%d", notify_handle);
 
-	pig_pid = fork();
+	//pig_pid = fork();
 
-	if (pig_pid == 0)
-	{
-		// TODO: pay attention to VCD
-		// this is probably broken now
-		int fd = open(fifo, O_RDONLY, 0);
-		int out_fd = open(WF_FILENAME, O_WRONLY | O_TRUNC | O_CREAT, 0);
-		chmod(WF_FILENAME, 0666);
-		dup2(fd, STDIN_FILENO);
-		dup2(out_fd, STDOUT_FILENO);
+	//if (pig_pid == 0)
+	//{
+		//// TODO: pay attention to VCD
+		//// this is probably broken now
+		//int fd = open(fifo, O_RDONLY, 0);
+		//int out_fd = open(WF_FILENAME, O_WRONLY | O_TRUNC | O_CREAT, 0);
+		//chmod(WF_FILENAME, 0666);
+		//dup2(fd, STDIN_FILENO);
+		//dup2(out_fd, STDOUT_FILENO);
 
-		int a = execl("/usr/local/bin/pig2vcd", "pig2vcd", (char *)0);
-		if (a)
-			perror("EXE error: ");
-		return 0;
-	}
+		//int a = execl("/usr/local/bin/pig2vcd", "pig2vcd", (char *)0);
+		//if (a)
+			//perror("EXE error: ");
+		//return 0;
+	//}
 
 	//for(auto i : INPUT)
 	//{
@@ -415,9 +417,9 @@ int FPGA::start_notify(QString msg)
 	//if (m_debug)
 		//qDebug() << "Clear returned: " << ret1 << " and " << ret2;
 
-	ret = gpioNotifyBegin(notify_handle, 0xFFFFFFFFU);
-	if (m_debug)
-		qDebug() << "NotifyBegin returned: " << ret;
+	//ret = gpioNotifyBegin(notify_handle, 0xFFFFFFFFU);
+	//if (m_debug)
+		//qDebug() << "NotifyBegin returned: " << ret;
 
 	// per-ms sample callback -- for fast tasks
 	//ret = gpioSetGetSamplesFunc(fast_callback, GPIO_MASK | WD_MASK);
@@ -449,16 +451,17 @@ int FPGA::end_notify()
 		notifying = false;
 		monitor_thrd.join();
 		//uart_thrd.join();
-		gpioNotifyClose(notify_handle);
+		//gpioNotifyClose(notify_handle);
 		gpioWrite_Bits_0_31_Clear(0xFFFFFFFFU);
 		gpioWrite_Bits_32_53_Clear(0xFFFFFFFFU);
 		//gpioWrite_Bits_0_31_Clear(INPUT_MASK);
 		//gpioWrite_Bits_32_53_Clear(INPUT_MASK >> 32);
 		//serClose(serial_port);
-		char cmd[50];
-		sprintf(cmd, "sudo kill -9 %d", pig_pid);
-		system(cmd);
-		waitpid(pig_pid, NULL, 0);
+
+		//char cmd[50];
+		//sprintf(cmd, "sudo kill -9 %d", pig_pid);
+		//system(cmd);
+		//waitpid(pig_pid, NULL, 0);
 		gpioSetGetSamplesFunc(NULL, 0);
 	}
 	gpioTerminate();
