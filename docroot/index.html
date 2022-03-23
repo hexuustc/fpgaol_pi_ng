@@ -78,52 +78,55 @@
 	</div>
 	<h1 align="center" style="color:#ff00ff">PERIPH DEMO</h1>
 	<div class="container module">
-		<textarea id="jsoninput" rows="2" cols="100" style="color:#ff0000"></textarea>
+		<p>LED <input type="number" id="custom_led_cnt" min="0" max="64"></p>
+		<p>SW <input type="number" id="custom_sw_cnt" min="0" max="64"></p>
+		<p>UART <input type="number" id="custom_uart_cnt" min="0" max="64">
+		<button type="button" id="gen-periph" class="btn btn-primary">Generate</button>
+		</p>
 	</div>
 	<div class="container module">
-		<button type="button" id="submit-json" class="btn btn-primary">Submit Json</button>
+		<textarea readonly id="json-input" rows="2" cols="80" style="color:#ff0000"></textarea>
+		<button type="button" id="submit-json" class="btn btn-primary">Submit</button>
 	</div>
 	<div class="container module">
-		<textarea id="jsoninput" rows="2" cols="100" style="color:#0000ff"></textarea>
-	</div>
-	<div class="container module">
+		<textarea readonly id="xdc-output" rows="2" cols="80" style="color:#0000ff"></textarea>
 		<button type="button" id="copy-xdc" class="btn btn-primary">Copy XDC</button>
 	</div>
 	<div class="container module">
-		<div class="fpgaled"><input type="checkbox" id="led0" disabled><label>0</label></div>
-		<div class="fpgaled"><input type="checkbox" id="led1" disabled><label>1</label></div>
-		<div class="fpgaled"><input type="checkbox" id="led2" disabled><label>2</label></div>
-		<div class="fpgaled"><input type="checkbox" id="led3" disabled><label>3</label></div>
-		<div class="fpgaled"><input type="checkbox" id="led4" disabled><label></label></div>
-		<div class="fpgaled"><input type="checkbox" id="led5" disabled><label></label></div>
-		<div class="fpgaled"><input type="checkbox" id="led6" disabled><label></label></div>
-		<div class="fpgaled"><input type="checkbox" id="led7" disabled><label></label></div>
-		<div class="fpgaled"><input type="checkbox" id="led8" disabled><label></label></div>
-		<div class="fpgaled"><input type="checkbox" id="led9" disabled><label></label></div>
-		<div class="fpgaled"><input type="checkbox" id="led10" disabled><label></label></div>
-		<div class="fpgaled"><input type="checkbox" id="led11" disabled><label></label></div>
-		<div class="fpgaled"><input type="checkbox" id="led12" disabled><label></label></div>
-		<div class="fpgaled"><input type="checkbox" id="led13" disabled><label></label></div>
-		<div class="fpgaled"><input type="checkbox" id="led14" disabled><label></label></div>
-		<div class="fpgaled"><input type="checkbox" id="led15" disabled><label></label></div>
+		<div id="ledd0"  class="fpgaled"><input type="checkbox" id="led0" disabled><label></label></div>
+		<div id="ledd1"  class="fpgaled"><input type="checkbox" id="led1" disabled><label></label></div>
+		<div id="ledd2"  class="fpgaled"><input type="checkbox" id="led2" disabled><label></label></div>
+		<div id="ledd3"  class="fpgaled"><input type="checkbox" id="led3" disabled><label></label></div>
+		<div id="ledd4"  class="fpgaled"><input type="checkbox" id="led4" disabled><label></label></div>
+		<div id="ledd5"  class="fpgaled"><input type="checkbox" id="led5" disabled><label></label></div>
+		<div id="ledd6"  class="fpgaled"><input type="checkbox" id="led6" disabled><label></label></div>
+		<div id="ledd7"  class="fpgaled"><input type="checkbox" id="led7" disabled><label></label></div>
+		<div id="ledd8"  class="fpgaled"><input type="checkbox" id="led8" disabled><label></label></div>
+		<div id="ledd9"  class="fpgaled"><input type="checkbox" id="led9" disabled><label></label></div>
+		<div id="ledd10" class="fpgaled"><input type="checkbox" id="led10" disabled><label></label></div>
+		<div id="ledd11" class="fpgaled"><input type="checkbox" id="led11" disabled><label></label></div>
+		<div id="ledd12" class="fpgaled"><input type="checkbox" id="led12" disabled><label></label></div>
+		<div id="ledd13" class="fpgaled"><input type="checkbox" id="led13" disabled><label></label></div>
+		<div id="ledd14" class="fpgaled"><input type="checkbox" id="led14" disabled><label></label></div>
+		<div id="ledd15" class="fpgaled"><input type="checkbox" id="led15" disabled><label></label></div>
 	</div>
 	<div class="container module">
-		<div class="fpgaswitch"><input type="checkbox" id="sw0" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw1" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw2" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw3" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw4" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw5" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw6" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw7" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw8" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw9" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw10" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw11" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw12" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw13" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw14" /><label></label></div>
-		<div class="fpgaswitch"><input type="checkbox" id="sw15" /><label></label></div>
+		<div id="swd0"  class="fpgaswitch"><input type="checkbox" id="sw0" /><label></label></div>
+		<div id="swd1"  class="fpgaswitch"><input type="checkbox" id="sw1" /><label></label></div>
+		<div id="swd2"  class="fpgaswitch"><input type="checkbox" id="sw2" /><label></label></div>
+		<div id="swd3"  class="fpgaswitch"><input type="checkbox" id="sw3" /><label></label></div>
+		<div id="swd4"  class="fpgaswitch"><input type="checkbox" id="sw4" /><label></label></div>
+		<div id="swd5"  class="fpgaswitch"><input type="checkbox" id="sw5" /><label></label></div>
+		<div id="swd6"  class="fpgaswitch"><input type="checkbox" id="sw6" /><label></label></div>
+		<div id="swd7"  class="fpgaswitch"><input type="checkbox" id="sw7" /><label></label></div>
+		<div id="swd8"  class="fpgaswitch"><input type="checkbox" id="sw8" /><label></label></div>
+		<div id="swd9"  class="fpgaswitch"><input type="checkbox" id="sw9" /><label></label></div>
+		<div id="swd10" class="fpgaswitch"><input type="checkbox" id="sw10" /><label></label></div>
+		<div id="swd11" class="fpgaswitch"><input type="checkbox" id="sw11" /><label></label></div>
+		<div id="swd12" class="fpgaswitch"><input type="checkbox" id="sw12" /><label></label></div>
+		<div id="swd13" class="fpgaswitch"><input type="checkbox" id="sw13" /><label></label></div>
+		<div id="swd14" class="fpgaswitch"><input type="checkbox" id="sw14" /><label></label></div>
+		<div id="swd15" class="fpgaswitch"><input type="checkbox" id="sw15" /><label></label></div>
 	</div>
 	<div class="container">
 		<div class="xterm" id="xterm0"></div>

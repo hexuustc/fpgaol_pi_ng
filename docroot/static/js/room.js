@@ -113,9 +113,34 @@ $(document).ready(function () {
     $("#bitstream").change(function () {
         $("#file-name").val($("#bitstream").val());
     });
+	$("#gen-periph").click(function () {
+		var led_cnt = $("#custom_led_cnt").val();
+		var sw_cnt = $("#custom_sw_cnt").val();
+
+		var j = {'id': -2, 'periphs': []};
+		for (var i = 0; i < led_cnt; i++) {
+			j.periphs.push({
+				'type': 'LED',
+				'idx': i
+			});
+		}
+		for (var i = 0; i < sw_cnt; i++) {
+			j.periphs.push({
+				'type': 'BTN',
+				'idx': i
+			});
+		}
+
+		hw_init_json = JSON.stringify(j);
+		$("#json-input").prop({'value': hw_init_json});
+	});
 	$("#submit-json").click(function () {
+		sendStopNotify();
 		clear_periph();
 		prepare_periph();
+		setTimeout(function(){
+			sendStartNotify(hw_init_json);
+		}, 1000);
 	});
 	$("#copy-xdc").click(function () {
 	});
@@ -206,8 +231,7 @@ $(document).ready(function () {
 
 	clear_everything();
 
-	//document.getElementById("jsoninput").value = hw_init_json;
-	$("#jsoninput").prop({'value': hw_init_json});
+	$("#json-input").prop({'value': hw_init_json});
 	clear_periph();
 	prepare_periph();
 
@@ -221,11 +245,11 @@ $(document).ready(function () {
 	//})
 	// start data acquisition after 1s, before web programming,
 	// because programming may has been done in Vivado XVC
-	setTimeout(function(){
-		sendStopNotify();
+	//setTimeout(function(){
+		//sendStopNotify();
 		//clear_everything();
-		sendStartNotify(hw_init_json);
-	}, 1000);
+		//sendStartNotify(hw_init_json);
+	//}, 1000);
 });
 
 function setLED(idx, val) {
@@ -234,6 +258,7 @@ function setLED(idx, val) {
 function SW_change(idx, val) {
 	console.log("SW", idx, val);
 	sendJson(JSON.stringify({
+		'id': -3,
 		'type': 'BTN',
 		'idx': idx,
 		'payload': val
@@ -272,16 +297,18 @@ function sendStartNotify(json) {
 
 // parse json on panel, initialize frontend peripherals
 function prepare_periph() {
-	var json = document.getElementById("jsoninput").value;
+	var json = document.getElementById("json-input").value;
 	var data = JSON.parse(json);
 	var periphs = data['periphs'];
 	for(var i = 0; i < periphs.length; i++) {
 		var p = periphs[i];
 		console.log(p.type, p.idx);
 		if (p.type == 'LED') {
+			$("#ledd" + i).removeClass('d-none');
 			//
 		} else if (p.type == 'BTN') {
-			$('#sw' + p.idx).prop("disabled", false);
+			$("#swd" + i).removeClass('d-none');
+			//$('#sw' + p.idx).prop('disabled', false);
 			$('#sw' + p.idx).change(function() {
 				SW_change(this.id.slice(2), this.checked);
 			});
@@ -292,12 +319,13 @@ function prepare_periph() {
 
 function clear_periph() {
 	for (var i = 0; i < 16; ++i) {
-		$("#sw" + i).prop({'checked': false, 'disabled': true});
+		$("#sw" + i).prop({'checked': false});
+		//$("#sw" + i).prop({'disabled': true});
 		$("#sw" + i).off('change');
-		//$("#sw" + i).hide();
+		$("#swd" + i).addClass('d-none');
 		$("#led" + i).prop({'checked': false});
 		$("#led" + i).off('change');
-		//$("#led" + i).addClass('d-none');
+		$("#ledd" + i).addClass('d-none');
 	}
 }
 
