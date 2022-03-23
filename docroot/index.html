@@ -76,6 +76,61 @@
 	<div class="container">
 		</br>
 	</div>
+	<h1 align="center" style="color:#ff00ff">PERIPH DEMO</h1>
+	<div class="container module">
+		<textarea id="jsoninput" rows="2" cols="100" style="color:#ff0000"></textarea>
+	</div>
+	<div class="container module">
+		<button type="button" id="submit-json" class="btn btn-primary">Submit Json</button>
+	</div>
+	<div class="container module">
+		<textarea id="jsoninput" rows="2" cols="100" style="color:#0000ff"></textarea>
+	</div>
+	<div class="container module">
+		<button type="button" id="copy-xdc" class="btn btn-primary">Copy XDC</button>
+	</div>
+	<div class="container module">
+		<div class="fpgaled"><input type="checkbox" id="led0" disabled><label>0</label></div>
+		<div class="fpgaled"><input type="checkbox" id="led1" disabled><label>1</label></div>
+		<div class="fpgaled"><input type="checkbox" id="led2" disabled><label>2</label></div>
+		<div class="fpgaled"><input type="checkbox" id="led3" disabled><label>3</label></div>
+		<div class="fpgaled"><input type="checkbox" id="led4" disabled><label></label></div>
+		<div class="fpgaled"><input type="checkbox" id="led5" disabled><label></label></div>
+		<div class="fpgaled"><input type="checkbox" id="led6" disabled><label></label></div>
+		<div class="fpgaled"><input type="checkbox" id="led7" disabled><label></label></div>
+		<div class="fpgaled"><input type="checkbox" id="led8" disabled><label></label></div>
+		<div class="fpgaled"><input type="checkbox" id="led9" disabled><label></label></div>
+		<div class="fpgaled"><input type="checkbox" id="led10" disabled><label></label></div>
+		<div class="fpgaled"><input type="checkbox" id="led11" disabled><label></label></div>
+		<div class="fpgaled"><input type="checkbox" id="led12" disabled><label></label></div>
+		<div class="fpgaled"><input type="checkbox" id="led13" disabled><label></label></div>
+		<div class="fpgaled"><input type="checkbox" id="led14" disabled><label></label></div>
+		<div class="fpgaled"><input type="checkbox" id="led15" disabled><label></label></div>
+	</div>
+	<div class="container module">
+		<div class="fpgaswitch"><input type="checkbox" id="sw0" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw1" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw2" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw3" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw4" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw5" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw6" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw7" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw8" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw9" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw10" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw11" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw12" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw13" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw14" /><label></label></div>
+		<div class="fpgaswitch"><input type="checkbox" id="sw15" /><label></label></div>
+	</div>
+	<div class="container">
+		<div class="xterm" id="xterm0"></div>
+		<div class="xterm" id="xterm1"></div>
+		<div class="xterm" id="xterm2"></div>
+		<div class="xterm" id="xterm3"></div>
+	</div>
 	<div class="container module">
 		<h4>FPGA interface</h4>
 		<div class="row">
@@ -91,14 +146,14 @@
 					<span class="fpgalabel" align="center">led0</span>
 				</div>
 				<div class="container">
-					<div class="fpgaled"><input type="checkbox" id="led7" disabled><label></label></div>
-					<div class="fpgaled"><input type="checkbox" id="led6" disabled><label></label></div>
-					<div class="fpgaled"><input type="checkbox" id="led5" disabled><label></label></div>
-					<div class="fpgaled"><input type="checkbox" id="led4" disabled><label></label></div>
-					<div class="fpgaled"><input type="checkbox" id="led3" disabled><label></label></div>
-					<div class="fpgaled"><input type="checkbox" id="led2" disabled><label></label></div>
-					<div class="fpgaled"><input type="checkbox" id="led1" disabled><label></label></div>
-					<div class="fpgaled"><input type="checkbox" id="led0" disabled><label></label></div>
+					<!--<div class="fpgaled"><input type="checkbox" id="led7" disabled><label></label></div>-->
+					<!--<div class="fpgaled"><input type="checkbox" id="led6" disabled><label></label></div>-->
+					<!--<div class="fpgaled"><input type="checkbox" id="led5" disabled><label></label></div>-->
+					<!--<div class="fpgaled"><input type="checkbox" id="led4" disabled><label></label></div>-->
+					<!--<div class="fpgaled"><input type="checkbox" id="led3" disabled><label></label></div>-->
+					<!--<div class="fpgaled"><input type="checkbox" id="led2" disabled><label></label></div>-->
+					<!--<div class="fpgaled"><input type="checkbox" id="led1" disabled><label></label></div>-->
+					<!--<div class="fpgaled"><input type="checkbox" id="led0" disabled><label></label></div>-->
 				</div>
 				<div class="container">
 					<div class="fpgaline"><label></label></div>
@@ -146,14 +201,14 @@
 					<div class="fpgaline"><label></label></div>
 				</div>
 				<div class="container">
-					<div class="fpgaswitch"><input type="checkbox" id="sw7" /><label></label></div>
-					<div class="fpgaswitch"><input type="checkbox" id="sw6" /><label></label></div>
-					<div class="fpgaswitch"><input type="checkbox" id="sw5" /><label></label></div>
-					<div class="fpgaswitch"><input type="checkbox" id="sw4" /><label></label></div>
-					<div class="fpgaswitch"><input type="checkbox" id="sw3" /><label></label></div>
-					<div class="fpgaswitch"><input type="checkbox" id="sw2" /><label></label></div>
-					<div class="fpgaswitch"><input type="checkbox" id="sw1" /><label></label></div>
-					<div class="fpgaswitch"><input type="checkbox" id="sw0" /><label></label></div>
+					<!--<div class="fpgaswitch"><input type="checkbox" id="sw7" /><label></label></div>-->
+					<!--<div class="fpgaswitch"><input type="checkbox" id="sw6" /><label></label></div>-->
+					<!--<div class="fpgaswitch"><input type="checkbox" id="sw5" /><label></label></div>-->
+					<!--<div class="fpgaswitch"><input type="checkbox" id="sw4" /><label></label></div>-->
+					<!--<div class="fpgaswitch"><input type="checkbox" id="sw3" /><label></label></div>-->
+					<!--<div class="fpgaswitch"><input type="checkbox" id="sw2" /><label></label></div>-->
+					<!--<div class="fpgaswitch"><input type="checkbox" id="sw1" /><label></label></div>-->
+					<!--<div class="fpgaswitch"><input type="checkbox" id="sw0" /><label></label></div>-->
 				</div>
 				<div class="container">
 					<span class="fpgalabel" align="center">sw7</span>
@@ -168,7 +223,7 @@
 			</div>
 			<div class="col-6 colmodule">
 				<!--<h3>uart</h3>-->
-				<div class="xterm" id="xterm"></div>
+				<!--<div class="xterm" id="xterm"></div>-->
 				uart pins:&nbsp;&nbsp;&nbsp;
 				<span class="fpgalabel" align="center">cts</span>
 				<span class="fpgalabel" align="center">rts</span>
@@ -336,7 +391,7 @@
 				<div class="modal-body">
 					<p>
 						Connection closed unexpectedly!</br>
-						Perhaps it's a network error or you may be holding FPGA for too long (>10 min).</br>
+						Perhaps it's a network error or you may be holding FPGA for too long (>20 min).</br>
 						You can leave this page to acquire again or continue using this page(view waveform of a
 						period).</br>
 					</p>
