@@ -10,7 +10,7 @@
 
 // storage of all peripherals -- periph ID as key
 // vectors contains array of different kinds of peripherals
-std::map<int, std::vector<Periph> > periph_arr;
+std::map<int, std::vector<Periph*> > periph_arr;
 
 std::map<std::string, int> periphstr2id_map = {
 	{"LED", LED_ID},

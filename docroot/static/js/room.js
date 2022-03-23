@@ -73,26 +73,24 @@ $(document).ready(function () {
             'ws://' + PI_SERVER_ADDRESS + '/ws/');
     }
     notifySocket.onmessage = function (e) {
-        console.log("receive message");
         var data = JSON.parse(e.data);
+        //console.log("receive message:", data);
         var type = data['type'];
         var idx = data['idx'];
 		var payload = data['payload'];
 		if (type == 'LED') {
-			setLed(idx, payload);
-			var p = periphs[i];
-			console.log(p.type);
+			setLED(idx, payload);
+			//var p = periphs[i];
+			//console.log(p.type);
 		//} else if (type == 'BTN') {
 			//setSeg(values);
 		} else if (type == 'WF') {
 			document.getElementById("download").innerHTML = "Download";
 			$("#download").attr("href", "./waveform.vcd");
 		} else if (type == 'XDC') {
-			$("#copy-xdc").prop({'value': payload});
+			$("#xdc-output").prop({'value': payload});
 		}
 			//term.write(values);
-			//console.log("term output");
-		//console.log("echo end");
     };
 
     // Waveform generation
@@ -207,7 +205,7 @@ $(document).ready(function () {
                     progress.removeClass("progress-bar-animated");
                     statustext.text(this.responseText);
                     if (this.status == 200) {
-                        clear_everything();
+                        clear_download();
                         filestatus.removeClass("alert-danger");
                         filestatus.removeClass("alert-info");
                         filestatus.addClass("alert-success");
@@ -229,7 +227,7 @@ $(document).ready(function () {
         });
     });
 
-	clear_everything();
+	clear_download();
 
 	$("#json-input").prop({'value': hw_init_json});
 	clear_periph();
@@ -304,13 +302,13 @@ function prepare_periph() {
 		var p = periphs[i];
 		console.log(p.type, p.idx);
 		if (p.type == 'LED') {
-			$("#ledd" + i).removeClass('d-none');
+			$("#ledd" + p.idx).removeClass('d-none');
 			//
 		} else if (p.type == 'BTN') {
-			$("#swd" + i).removeClass('d-none');
+			$("#swd" + p.idx).removeClass('d-none');
 			//$('#sw' + p.idx).prop('disabled', false);
 			$('#sw' + p.idx).change(function() {
-				SW_change(this.id.slice(2), this.checked);
+				SW_change(parseInt(this.id.slice(2)), this.checked);
 			});
 		}
 	}
@@ -334,8 +332,7 @@ function sendJson(json) {
 	notifySocket.send(json);
 }
 
-function clear_everything() {
-	clear_periph();
+function clear_download() {
     $("#upload-button").removeAttr("disabled");
     $("#generate").removeAttr("disabled");
     document.getElementById("download").innerHTML = "";

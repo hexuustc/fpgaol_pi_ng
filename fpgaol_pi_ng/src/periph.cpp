@@ -26,16 +26,11 @@ Periph::~Periph()
 {
 }
 
-int Periph::poll()
-{
-	return 0;
-}
-
 int Periph::send_msg()
 {
 }
 
-int Periph::on_notify(QString msg)
-{
-	return 0;
-}
+//int Periph::on_notify(QString msg)
+//{
+	//return 0;
+//}

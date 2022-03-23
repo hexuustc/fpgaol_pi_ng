@@ -10,6 +10,7 @@
 
 int main(int argc, char *argv[])
 {
+	gpioTerminate();
 	qInstallMessageHandler(outputMessage);
 
     qDebug("This is a debug message");

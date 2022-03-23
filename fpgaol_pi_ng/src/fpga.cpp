@@ -13,7 +13,7 @@
 
 static int pig_pid;
 static int notify_handle;
-static volatile int g_reset_counts = 0;
+//static volatile int g_reset_counts = 0;
 //static volatile uint64_t num_count[8][16];
 //static uint64_t prev_level = 0, prev_tick = 0, cur_output = 0;
 //static uint64_t seg_value = 0, seg_idx = 0;
@@ -165,8 +165,11 @@ static void uart_fn(int serial_port)
 // contains a tens-of-millisecond busy wait
 static void slow_mon_thread()
 {
-	time_t time_slowpoll;
-	time_t time_fastpoll;
+	uint32_t fastpoll_ms = 5;
+	uint32_t slowpoll_rate = 20;
+	uint32_t sslowpoll_rate = 200;
+	uint32_t slow_cnt = 0;
+	uint32_t sslow_cnt = 0;
 
 	//uint64_t count[goutputn][16];
 	//uint64_t output;
@@ -187,14 +190,34 @@ static void slow_mon_thread()
 	qInfo() << "Monitor thread started\n";
 	while (1)
 	{
-		gpioDelay(93 * 1000);
+		slow_cnt++;
+		//sslow_cnt++;
+		//qDebug() << "LOOP";
+		// fast poll, like 7-seg display
+
+		// slow poll, like LED
+		if (slow_cnt == slowpoll_rate) {
+			slow_cnt = 0;
+			//qDebug() << "SLOWPOLL";
+			int led_id = periphstr2id_map.find("LED")->second;
+			std::vector<Periph*>& v = periph_arr.find(led_id)->second;
+			for(int i = 0; i < v.size(); i++) {
+				Periph* p = v[i];
+				LED* q = static_cast<LED*>(p);
+				q->poll();
+			}
+		}
+
+		// very slow poll, just sync everything periodically
+
+		gpioDelay(fastpoll_ms * 1000);
 
 		if (!notifying)
 			return;
 
 		//memcpy(count, (void *)num_count, sizeof(count));
 
-		g_reset_counts = 1;
+		//g_reset_counts = 1;
 
 		// Has outputs changed?
 		//output = ((gpioRead_Bits_32_53() << 32) | gpioRead_Bits_0_31()) & OUTPUT_MASK;
@@ -370,7 +393,7 @@ int FPGA::start_notify(QString msg)
 		// after this point, map.find is guarenteed to be valid
 		int p_id = itr->second;
 		int p_idx = entry.toObject().value("idx").toInt();
-		std::vector<Periph>& vec = periph_arr.find(p_id)->second;
+		std::vector<Periph*>& vec = periph_arr.find(p_id)->second;
 		int p_pincnt = pincnt_map.find(p_id)->second;
 		int p_needpoll = needpoll_map.find(p_id)->second;
 		int p_pin_arr[PERIPH_MAX_PINS];
@@ -381,14 +404,14 @@ int FPGA::start_notify(QString msg)
 		if (p_id == LED_ID) {
 			std::cout << "LED " << p_idx;
 			gpioSetMode(p_pin_arr[0], PI_INPUT);
-			vec.push_back(LED(p_id, p_idx, p_needpoll, p_pincnt, p_pin_arr));
+			vec.push_back(new LED(p_id, p_idx, p_needpoll, p_pincnt, p_pin_arr));
 			// TODO: this is only semi-automated, should integrate pin name into another map
 			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_pin_arr[0]] << " IOSTANDARD LVCMOS33} [get_ports {led[" << p_idx << "]}];" << std::endl;
 		} else if (p_id == BTN_ID) {
 			std::cout << "BTN " << p_idx;
 			gpioSetMode(p_pin_arr[0], PI_OUTPUT);
 			gpioWrite(p_pin_arr[0], 0);
-			vec.push_back(BTN(p_id, p_idx, p_needpoll, p_pincnt, p_pin_arr));
+			vec.push_back(new BTN(p_id, p_idx, p_needpoll, p_pincnt, p_pin_arr));
 			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_pin_arr[0]] << " IOSTANDARD LVCMOS33} [get_ports {sw[" << p_idx << "]}];" << std::endl;
 		} else {
 			// periphs can be unsupported, but its information
@@ -458,7 +481,7 @@ int FPGA::start_notify(QString msg)
 	j_reply["id"] = 0;
 	j_reply["type"] = "XDC";
 	j_reply["payload"] = xdc_ss.str().c_str();
-	msgback = QJsonDocument(json).toJson(QJsonDocument::Compact);
+	msgback = QJsonDocument(j_reply).toJson(QJsonDocument::Compact);
 	fpga_instance->call_send_fpga_msg(msgback);
 
 	return 0;

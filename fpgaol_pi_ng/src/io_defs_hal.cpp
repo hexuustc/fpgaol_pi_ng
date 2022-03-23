@@ -12,8 +12,8 @@ std::string pi2_io2fpin[100] = {
 void platform_dependent_gpio_init()
 {
 	for (auto const &itr : periphstr2id_map) {
-		std::vector<Periph> v;
-		std::pair<int, std::vector<Periph> >p;
+		std::vector<Periph*> v;
+		std::pair<int, std::vector<Periph*> >p;
 		p.first = itr.second;
 		p.second = v;
 		periph_arr.insert(p);

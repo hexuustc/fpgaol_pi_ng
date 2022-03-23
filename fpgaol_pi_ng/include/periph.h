@@ -37,11 +37,11 @@ class Periph
 		// poll peripherals, currently no interrupt
 		// should return fast
 		// return: 0 nothing or already handled, none-zero need attention
-		int poll();
+		virtual int poll() {};
 		// callback of the signal notify(e.g. write value in msg to hw)
 		// nobody prevent putting a send_msg call in this -- so 
 		// sending a notifiction back is OK
-		int on_notify(QString msg);
+		virtual int on_notify(QString msg) { return 0; };
 
 		// when frontend requires device attention, a signal is sent
 		// this is automatically connect to on_notify
