@@ -2,6 +2,7 @@
 #include "peripherals.h"
 #include "io_defs_hal.h"
 #include<iostream>
+#include <sstream>
 
 #define WF_FILENAME "/home/pi/docroot/waveform.vcd"
 #define WD_PIN 31
@@ -348,6 +349,14 @@ int FPGA::start_notify(QString msg)
 
 	platform_dependent_gpio_init();
 
+	std::stringstream xdc_ss;
+	xdc_ss << "# FPGAOL AUTO GEN XDC V1.0" << std::endl;
+	xdc_ss << "set_property -dict {PACKAGE_PIN B8 IOSTANDARD LVCMOS33} [get_ports {clk}];" << std::endl;
+	xdc_ss << "create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports {clk}];" << std::endl;
+
+	QJsonObject j_reply;
+	QString msgback;
+
 	int pipin_cnt = 0;
 	auto json = QJsonDocument::fromJson(msg.toUtf8());
 	QJsonArray periphs = json.object().value("periphs").toArray();
@@ -370,12 +379,17 @@ int FPGA::start_notify(QString msg)
 			p_pin_arr[i] = pipin_cnt++;
 		// create Periph
 		if (p_id == LED_ID) {
+			std::cout << "LED " << p_idx;
 			gpioSetMode(p_pin_arr[0], PI_INPUT);
 			vec.push_back(LED(p_id, p_idx, p_needpoll, p_pincnt, p_pin_arr));
+			// TODO: this is only semi-automated, should integrate pin name into another map
+			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_pin_arr[0]] << " IOSTANDARD LVCMOS33} [get_ports {led[" << p_idx << "]}];" << std::endl;
 		} else if (p_id == BTN_ID) {
+			std::cout << "BTN " << p_idx;
 			gpioSetMode(p_pin_arr[0], PI_OUTPUT);
 			gpioWrite(p_pin_arr[0], 0);
 			vec.push_back(BTN(p_id, p_idx, p_needpoll, p_pincnt, p_pin_arr));
+			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_pin_arr[0]] << " IOSTANDARD LVCMOS33} [get_ports {sw[" << p_idx << "]}];" << std::endl;
 		} else {
 			// periphs can be unsupported, but its information
 			// must be still in code
@@ -423,8 +437,8 @@ int FPGA::start_notify(QString msg)
 
 	// per-ms sample callback -- for fast tasks
 	//ret = gpioSetGetSamplesFunc(fast_callback, GPIO_MASK | WD_MASK);
-	if (m_debug)
-		qDebug() << "SetGetSFN returned: " << ret;
+	//if (m_debug)
+		//qDebug() << "SetGetSFN returned: " << ret;
 
 	//serial_port = serOpen("/dev/serial0", 115200, NULL);
 	//if (m_debug)
@@ -436,7 +450,16 @@ int FPGA::start_notify(QString msg)
 
 	qInfo() << "Notify started";
 	notifying = true;
-	std::cout << "Start" << std::endl;
+	std::cout << "Started" << std::endl;
+
+	// everything OK, generate a XDC constraint file 
+	// and send back to frontend
+	qDebug() << xdc_ss.str().c_str();
+	j_reply["id"] = 0;
+	j_reply["type"] = "XDC";
+	j_reply["payload"] = xdc_ss.str().c_str();
+	msgback = QJsonDocument(json).toJson(QJsonDocument::Compact);
+	fpga_instance->call_send_fpga_msg(msgback);
 
 	return 0;
 fail:

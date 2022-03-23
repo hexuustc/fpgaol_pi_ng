@@ -3,7 +3,7 @@
 
 std::vector<Gpio> gpio_arr;
 
-static std::string pi2_io2fpin[100] = {
+std::string pi2_io2fpin[100] = {
 "K17", "K18", "L14", "M14", "L18", "M18", "R12", "R13", "M13", "R18",
 "T18", "N14", "P14", "P18", "M16", "M17", "T10", "T9", "U13", "T13",
 "V14", "U14", "V11", "V12", "U12", "U11", "T11", "V17", "U16", "U18",

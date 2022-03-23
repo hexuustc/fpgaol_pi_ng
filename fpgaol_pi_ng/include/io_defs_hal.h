@@ -44,6 +44,8 @@ class Gpio
 #define IO_MAX 46
 extern std::vector<Gpio> gpio_arr;
 
+extern std::string pi2_io2fpin[100];
+
 extern int BOARD_TYPE;
 extern int GPIOLIB_TYPE;
 

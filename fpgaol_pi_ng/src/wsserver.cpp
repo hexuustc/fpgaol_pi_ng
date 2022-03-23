@@ -8,6 +8,7 @@
 #include <QJsonDocument>
 #include <exception>
 #include <iostream>
+#include <string>
 
 #include "periph.h"
 #include "peripherals.h"
@@ -123,25 +124,32 @@ void wsServer::recvFPGAMessage(QString message)
         {
 			// ordinary notification message
 			// find the corresponding peripheral and notify it
-			int type = json["type"].toInt();
+			std::string type = json["type"].toString().toStdString();
 			int idx = json["idx"].toInt();
+			std::map<std::string, int>::iterator itr = periphstr2id_map.find(type);
+			if (itr == periphstr2id_map.end()) {
+				qDebug() << "ERR: peripheral type " << type.c_str() << " invliad!";
+				return;
+			}
+			int type_id = itr->second;
 			// on the interface we'd better pay more attention to corner cases
 			// as frontend users might be hostile
-			std::map<int, std::vector<Periph> >::iterator itr = periph_arr.find(type);
-			if (itr != periph_arr.end()) {
-				std::vector<Periph>&v = itr->second;
-				if ((uint32_t)idx < v.size()) {
-					// message is customized with (maybe) unique entries, 
-					// so only plausible way is to pass the msg(or json) itself
-					// TODO: consider using emit and signal here
-					ret = v[idx].on_notify(message);
-					if (ret)
-						qDebug() << "WARN: non-zero return on peripheral " \
-							<< type << ":" << idx << " notify";
-				} else
-					qDebug() << "ERR: peripheral " << type << " index out of range!";
+			std::map<int, std::vector<Periph> >::iterator itr2 = periph_arr.find(type_id);
+			if (itr2 == periph_arr.end()) {
+				qDebug() << "ERR: there is no type " << type.c_str() << " peripheral!";
+				return;
+			}
+			std::vector<Periph>&v = itr2->second;
+			if ((uint32_t)idx < v.size()) {
+				// message is customized with (maybe) unique entries, 
+				// so only plausible way is to pass the msg(or json) itself
+				// TODO: consider using emit and signal here
+				ret = v[idx].on_notify(message);
+				if (ret)
+					qDebug() << "WARN: non-zero return on peripheral " \
+						<< type.c_str() << ":" << idx << " notify";
 			} else
-				qDebug() << "ERR: there is no type " << type << " peripheral!";
+				qDebug() << "ERR: peripheral " << type.c_str() << idx << " index out of range!";
         }
         else
         {
