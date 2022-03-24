@@ -141,16 +141,22 @@ void wsServer::recvFPGAMessage(QString message)
 				return;
 			}
 			std::vector<Periph*>&v = itr2->second;
-			if ((uint32_t)idx < v.size()) {
+			//ret = v[idx]->on_notify(message);
+			for (int i = 0; i < v.size(); i++) {
+				if (v[i]->idx == idx) {
 				// message is customized with (maybe) unique entries, 
 				// so only plausible way is to pass the msg(or json) itself
 				// TODO: consider using emit and signal here
-				ret = v[idx]->on_notify(message);
-				if (ret)
-					qDebug() << "WARN: non-zero return on peripheral " \
-						<< type.c_str() << ":" << idx << " notify";
-			} else
-				qDebug() << "ERR: peripheral " << type.c_str() << idx << " index out of range!";
+				// only continuous index starting from 0 is tested!!!
+				// we expect msg from frontend is human-issued, so 
+				// performance not a concern here. 
+					ret = v[i]->on_notify(message);
+					if (ret)
+						qDebug() << "WARN: non-zero return on peripheral " \
+							<< type.c_str() << ":" << idx << " notify";
+				}
+			}
+				//qDebug() << "ERR: peripheral " << type.c_str() << idx << " index out of range!";
         }
         else
         {

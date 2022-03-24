@@ -127,35 +127,35 @@ uint64_t GPIO_MASK;
 	//return 0;
 //}
 
-static void uart_fn(int serial_port)
-{
-	qInfo() << "Uart thread started\n";
+//static void uart_fn(int serial_port)
+//{
+	//qInfo() << "Uart thread started\n";
 
-	while (true)
-	{
-		if (!notifying)
-			return;
-		char data[1000];
-		gpioDelay(1000);
-		mx.lock();
-		int available_data = serDataAvailable(serial_port);
-		if (available_data)
-		{
-			serRead(serial_port, data, available_data);
-			data[available_data] = '\0';
-			QJsonObject json;
-			json["type"] = "MSG";
-			json["values"] = QString(data);
-			auto msg = QJsonDocument(json).toJson(QJsonDocument::Compact);
+	//while (true)
+	//{
+		//if (!notifying)
+			//return;
+		//char data[1000];
+		//gpioDelay(1000);
+		//mx.lock();
+		//int available_data = serDataAvailable(serial_port);
+		//if (available_data)
+		//{
+			//serRead(serial_port, data, available_data);
+			//data[available_data] = '\0';
+			//QJsonObject json;
+			//json["type"] = "MSG";
+			//json["values"] = QString(data);
+			//auto msg = QJsonDocument(json).toJson(QJsonDocument::Compact);
 
-			if (debugging)
-				qDebug() << "Send: " << msg;
+			//if (debugging)
+				//qDebug() << "Send: " << msg;
 
-			fpga_instance->call_send_fpga_msg(msg);
-		}
-		mx.unlock();
-	}
-}
+			//fpga_instance->call_send_fpga_msg(msg);
+		//}
+		//mx.unlock();
+	//}
+//}
 
 /*
  * This is the thread to monitor LED and 7-seg level changes,
@@ -204,6 +204,14 @@ static void slow_mon_thread()
 			for(int i = 0; i < v.size(); i++) {
 				Periph* p = v[i];
 				LED* q = static_cast<LED*>(p);
+				q->poll();
+			}
+
+			int uart_id = periphstr2id_map.find("UART")->second;
+			v = periph_arr.find(uart_id)->second;
+			for(int i = 0; i < v.size(); i++) {
+				Periph* p = v[i];
+				UART* q = static_cast<UART*>(p);
 				q->poll();
 			}
 		}
@@ -398,8 +406,15 @@ int FPGA::start_notify(QString msg)
 		int p_needpoll = needpoll_map.find(p_id)->second;
 		int p_pin_arr[PERIPH_MAX_PINS];
 		// FPGAOL 2 has simple pin allocation
-		for (int i = 0; i < p_pincnt; i++)
-			p_pin_arr[i] = pipin_cnt++;
+		// just avoid UART/SPI pins
+		// we have a lot to waste
+		for (int i = 0; i < p_pincnt; i++) {
+			if (gpio_arr[i].special) {
+				i--;
+				pipin_cnt++;
+			}
+			else p_pin_arr[i] = pipin_cnt++;
+		}
 		// create Periph
 		if (p_id == LED_ID) {
 			std::cout << "LED " << p_idx;
@@ -413,6 +428,14 @@ int FPGA::start_notify(QString msg)
 			gpioWrite(p_pin_arr[0], 0);
 			vec.push_back(new BTN(p_id, p_idx, p_needpoll, p_pincnt, p_pin_arr));
 			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_pin_arr[0]] << " IOSTANDARD LVCMOS33} [get_ports {sw[" << p_idx << "]}];" << std::endl;
+		} else if (p_id == UART_ID) {
+			std::cout << "UART " << p_idx;
+			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_idx == 0 ?14:32] << " IOSTANDARD LVCMOS33} [get_ports {uart_rx" << p_idx << "}];" << std::endl;
+			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_idx == 0 ?15:33] << " IOSTANDARD LVCMOS33} [get_ports {uart_tx" << p_idx << "}];" << std::endl;
+			int p_baud = entry.toObject().value("baud").toInt();
+			if (!p_baud) p_baud = 115200;
+			vec.push_back(new UART(p_id, p_idx, p_needpoll, p_pincnt, p_pin_arr, p_baud));
+			
 		} else {
 			// periphs can be unsupported, but its information
 			// must be still in code

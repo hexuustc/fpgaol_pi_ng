@@ -16,14 +16,14 @@ std::map<std::string, int> periphstr2id_map = {
 	{"LED", LED_ID},
 	{"BTN", BTN_ID},
 	{"UART", UART_ID},
-	{"7SEGx8", SEG7x8_ID}
+	{"HEXPLAY", HEXPLAY_ID}
 };
 
 std::map<int, std::string> periphid2str_map = {
 	{LED_ID, "LED"},
 	{BTN_ID, "BTN"},
 	{UART_ID, "UART"},
-	{SEG7x8_ID, "7SEGx8"}
+	{HEXPLAY_ID, "HEXPLAY"}
 };
 
 // TODO: merge these map into one
@@ -31,8 +31,8 @@ std::map<int, std::string> periphid2str_map = {
 std::map<int, int> pincnt_map = {
 	{LED_ID, 1},
 	{BTN_ID, 1},
-	{UART_ID, 2},
-	{SEG7x8_ID, 8}
+	{UART_ID, 0}, // specially allocated
+	{HEXPLAY_ID, 8}
 };
 
 // why int? again we want to do sth with it later...
@@ -40,6 +40,6 @@ std::map<int, int> needpoll_map = {
 	{LED_ID, 1},
 	{BTN_ID, 0},
 	{UART_ID, 1},
-	{SEG7x8_ID, 1}
+	{HEXPLAY_ID, 1}
 };
 

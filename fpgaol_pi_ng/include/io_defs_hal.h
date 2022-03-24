@@ -23,10 +23,13 @@ class Gpio
 		bool used; // used or not?
 		Periph* periph; // who used this?
 	public:
+		bool special;
+	public:
 		Gpio(int i_pin, std::string i_fpin) {
 			pin = i_pin;
 			fpin = i_fpin;
 			used = false;
+			special = false;
 			periph = NULL;
 		}
 		~Gpio() {  }

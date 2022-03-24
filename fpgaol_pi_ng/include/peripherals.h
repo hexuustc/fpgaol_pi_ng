@@ -70,22 +70,56 @@ class BTN : public Periph
 			auto json = QJsonDocument::fromJson(msg.toUtf8());
 			int onoff = (int)json["payload"].toBool();
 			gpioWrite(pins[0], onoff);
-			std::cout << "BTN" << " " << pins[0] << " " <<  idx << " " << onoff << std::endl;
+			//std::cout << "BTN" << " " << pins[0] << " " <<  idx << " " << onoff << std::endl;
 			return 0;
 		};
 };
 
 #define UART_ID 1003
-class UART : Periph
+class UART : public Periph
 {
+	// idx -- /dev/serialX
+	private:
+	int baudrate;
+	int serport;
 	public:
 		//int on_notify(QString msg) { return 0; }
-	private:
-		int baudrate;
-
-
+		UART(int type, int idx, bool needpoll, int pincnt, int pins[], int baud) :
+			Periph(type, idx, needpoll, pincnt, pins) {
+				baudrate = baud;
+				char serstr[20] = "/dev/serial0";
+				serstr[11] += idx;
+				serport = serOpen(serstr, baudrate, NULL);
+			}
+		~UART() {
+			serClose(serport);
+		}
+		virtual int on_notify(QString msg) override {
+			auto json = QJsonDocument::fromJson(msg.toUtf8());
+			std::string s = json["payload"].toString().toStdString();
+			serWrite(serport, (char*)s.c_str(), s.length());
+			std::cout << "UART IN" << std::endl;
+			//std::cout << "BTN" << " " << pins[0] << " " <<  idx << " " << onoff << std::endl;
+			return 0;
+		}
+		virtual int poll() override {
+			char data[1000];
+			int available_data = serDataAvailable(serport);
+			if (available_data) {
+				serRead(serport, data, available_data);
+				data[available_data] = '\0';
+				QJsonObject json;
+				json["type"] = "UART";
+				json["idx"] = idx;
+				json["payload"] = QString(data);
+				auto msg = QJsonDocument(json).toJson(QJsonDocument::Compact);
+				fpga_instance->call_send_fpga_msg(msg);
+				std::cout << "UART OUT" << std::endl;
+			}
+			return 0;
+		};
 };
 
-#define SEG7x8_ID 1004
+#define HEXPLAY_ID 1004
 
 #endif /* PERIPHERALS_H */
