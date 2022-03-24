@@ -6,7 +6,7 @@ var DEBUG_HTTP_SERVER = "127.0.0.1:8080";
 var DEBUG_WS_SERVER = "127.0.0.1:8090";
 
 var token;
-var term;
+var term = new Array(4);
 var notifySocket;
 var PI_SERVER_ADDRESS;
 
@@ -14,19 +14,20 @@ var hexPlayDigits = [];
 
 var hw_init_json = JSON.stringify({
 	'id': -2,
-	'periphs': [{
-			'type': 'LED',
-			'idx' : 0,
-		}, {
-			'type': 'LED',
-			'idx' : 1,
-		}, {
-			'type': 'BTN',
-			'idx' : 0,
-		}, {
-			'type': 'BTN',
-			'idx' : 1,
-		}], 
+	'periphs': []
+	//'periphs': [{
+			//'type': 'LED',
+			//'idx' : 0,
+		//}, {
+			//'type': 'LED',
+			//'idx' : 1,
+		//}, {
+			//'type': 'BTN',
+			//'idx' : 0,
+		//}, {
+			//'type': 'BTN',
+			//'idx' : 1,
+		//}], 
 });
 
 var term_banner = '\x1B[1;1mFPGAOL \x1B[1;1;36mUART \x1B[1;1;32mxterm\x1B[1;1;33m.\x1B[1;1;31mjs \x1B[1;1;35m1.1\x1B[0m\r\n';
@@ -79,18 +80,20 @@ $(document).ready(function () {
         var idx = data['idx'];
 		var payload = data['payload'];
 		if (type == 'LED') {
-			setLED(idx, payload);
-			//var p = periphs[i];
-			//console.log(p.type);
-		//} else if (type == 'BTN') {
-			//setSeg(values);
+			$("#led" + idx).prop({'checked': payload ? true : false});
+		} else if (type == 'UART') {
+			term[idx].write(payload);
+		} else if (type == 'HEXPLAY') {
+			setHEXPLAY(idx, payload);
+			for (var i = 0; i < 8; ++i) {
+				$("#hexplay" + idx + "_span" + i).html(payload == -1 ? '&nbsp;' : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'b', 'C', 'd', 'E', 'F'][(payload >> 4*(7-i)) % 0x10]);
+			}
 		} else if (type == 'WF') {
 			document.getElementById("download").innerHTML = "Download";
 			$("#download").attr("href", "./waveform.vcd");
 		} else if (type == 'XDC') {
 			$("#xdc-output").prop({'value': payload});
 		}
-			//term.write(values);
     };
 
     // Waveform generation
@@ -100,9 +103,10 @@ $(document).ready(function () {
 		sendStopNotify();
     });
 
-    notifySocket.onclose = function () {
-        $("#timeoutModal").modal("show");
-    };
+	// TODO
+    //notifySocket.onclose = function () {
+        //$("#timeoutModal").modal("show");
+    //};
 
     // set ui event functions
     $("#file-select").click(function () {
@@ -114,6 +118,8 @@ $(document).ready(function () {
 	$("#gen-periph").click(function () {
 		var led_cnt = $("#custom_led_cnt").val();
 		var sw_cnt = $("#custom_sw_cnt").val();
+		var uart_cnt = $("#custom_uart_cnt").val();
+		var hexplay_cnt = $("#custom_hexplay_cnt").val();
 
 		var j = {'id': -2, 'periphs': []};
 		for (var i = 0; i < led_cnt; i++) {
@@ -125,6 +131,19 @@ $(document).ready(function () {
 		for (var i = 0; i < sw_cnt; i++) {
 			j.periphs.push({
 				'type': 'BTN',
+				'idx': i
+			});
+		}
+		for (var i = 0; i < uart_cnt; i++) {
+			j.periphs.push({
+				'type': 'UART',
+				'idx': i,
+				'baud': 115200
+			});
+		}
+		for (var i = 0; i < hexplay_cnt; i++) {
+			j.periphs.push({
+				'type': 'HEXPLAY',
 				'idx': i
 			});
 		}
@@ -227,6 +246,23 @@ $(document).ready(function () {
         });
     });
 
+	for (let i = 0; i < 4; i++) {
+		term[i] = new Terminal({rows:24, cols:80,});
+		term[i].open(document.getElementById('xterm' + i));
+		term[i].write('>' + i + '< ' + term_banner);
+		term[i].onData(
+			function (val) {
+				term[i].write(val);
+				sendJson(JSON.stringify({
+					'id': -3,
+					'type': 'UART',
+					'idx': i,
+					'payload': val
+				}));
+			}
+		);
+	}
+
 	clear_download();
 
 	$("#json-input").prop({'value': hw_init_json});
@@ -250,9 +286,6 @@ $(document).ready(function () {
 	//}, 1000);
 });
 
-function setLED(idx, val) {
-	$("#led" + idx).prop({'checked': val ? true : false});
-}
 function SW_change(idx, val) {
 	console.log("SW", idx, val);
 	sendJson(JSON.stringify({
@@ -310,6 +343,10 @@ function prepare_periph() {
 			$('#sw' + p.idx).change(function() {
 				SW_change(parseInt(this.id.slice(2)), this.checked);
 			});
+		} else if (p.type == 'UART') {
+			$("#xterm" + p.idx).removeClass('d-none');
+		} else if (p.type == 'HEXPLAY') {
+			$("#hexplay" + p.idx).removeClass('d-none');
 		}
 	}
 
@@ -325,6 +362,20 @@ function clear_periph() {
 		$("#led" + i).off('change');
 		$("#ledd" + i).addClass('d-none');
 	}
+	for (var i = 0; i < 4; i++) {
+		$("#xterm" + i).addClass('d-none');
+	}
+	for (var i = 0; i < 4; i++) {
+		$("#hexplay" + i).addClass('d-none');
+	}
+	// new xterm.js terminal
+	//term = new Terminal();
+	//term.open(document.getElementById('xterm'));
+	//term.write(term_banner);
+	//term.onData((val) => {
+		////term.write(val);
+		////sendGpio(-3, val);
+	//})
 }
 
 function sendJson(json) {

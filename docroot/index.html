@@ -78,61 +78,195 @@
 	</div>
 	<h1 align="center" style="color:#ff00ff">PERIPH DEMO</h1>
 	<div class="container module">
-		<p>LED <input type="number" id="custom_led_cnt" min="0" max="64"></p>
-		<p>SW <input type="number" id="custom_sw_cnt" min="0" max="64"></p>
-		<p>UART <input type="number" id="custom_uart_cnt" min="0" max="64">
-		<button type="button" id="gen-periph" class="btn btn-primary">Generate</button>
-		</p>
+		<div class="row">
+			<div class="col-1">LED <input type="number" id="custom_led_cnt" min="0" max="16" value="4" style="width:60px"></div>
+			<div class="col-1">SW <input type="number" id="custom_sw_cnt" min="0" max="16" value="4" style="width:60px"></div>
+			<div class="col-1">UART <input type="number" id="custom_uart_cnt" min="0" max="4" value="1" style="width:60px"></div>
+			<div class="col-1">HEXPLAY <input type="number" id="custom_hexplay_cnt" min="0" max="4" value="2" style="width:60px"></div>
+			<button type="button" id="gen-periph" class="btn btn-primary">Generate</button>
+		</div>
+		<div class="row">
+			<div class="container"></br></div>
+			<textarea readonly class="col-4" id="json-input" rows="5" cols="80" style="color:#ff0000"></textarea>
+			<!--<div class="col-2"></div>-->
+			<textarea readonly class="col-4" id="xdc-output" rows="5" cols="80" style="color:#0000ff"></textarea>
+		</div>
+		<div class="row">
+			<div class="col-4"><button type="button" id="submit-json" class="btn btn-primary">Submit</button></div>
+			<div class="col-4"><button type="button" id="copy-xdc" class="btn btn-primary">Copy XDC</button></div>
+		</div>
 	</div>
 	<div class="container module">
-		<textarea readonly id="json-input" rows="2" cols="80" style="color:#ff0000"></textarea>
-		<button type="button" id="submit-json" class="btn btn-primary">Submit</button>
 	</div>
+	<!--<div class="container module">-->
+		<!--<span class="fpgalabel" align="center">led7</span>-->
+		<!--<span class="fpgalabel" align="center">led6</span>-->
+		<!--<span class="fpgalabel" align="center">led5</span>-->
+		<!--<span class="fpgalabel" align="center">led4</span>-->
+		<!--<span class="fpgalabel" align="center">led3</span>-->
+		<!--<span class="fpgalabel" align="center">led2</span>-->
+		<!--<span class="fpgalabel" align="center">led1</span>-->
+		<!--<span class="fpgalabel" align="center">led0</span>-->
+	<!--</div>-->
 	<div class="container module">
-		<textarea readonly id="xdc-output" rows="2" cols="80" style="color:#0000ff"></textarea>
-		<button type="button" id="copy-xdc" class="btn btn-primary">Copy XDC</button>
-	</div>
-	<div class="container module">
-		<div id="ledd0"  class="fpgaled"><input type="checkbox" id="led0" disabled><label></label></div>
-		<div id="ledd1"  class="fpgaled"><input type="checkbox" id="led1" disabled><label></label></div>
-		<div id="ledd2"  class="fpgaled"><input type="checkbox" id="led2" disabled><label></label></div>
-		<div id="ledd3"  class="fpgaled"><input type="checkbox" id="led3" disabled><label></label></div>
-		<div id="ledd4"  class="fpgaled"><input type="checkbox" id="led4" disabled><label></label></div>
-		<div id="ledd5"  class="fpgaled"><input type="checkbox" id="led5" disabled><label></label></div>
-		<div id="ledd6"  class="fpgaled"><input type="checkbox" id="led6" disabled><label></label></div>
-		<div id="ledd7"  class="fpgaled"><input type="checkbox" id="led7" disabled><label></label></div>
-		<div id="ledd8"  class="fpgaled"><input type="checkbox" id="led8" disabled><label></label></div>
-		<div id="ledd9"  class="fpgaled"><input type="checkbox" id="led9" disabled><label></label></div>
-		<div id="ledd10" class="fpgaled"><input type="checkbox" id="led10" disabled><label></label></div>
-		<div id="ledd11" class="fpgaled"><input type="checkbox" id="led11" disabled><label></label></div>
-		<div id="ledd12" class="fpgaled"><input type="checkbox" id="led12" disabled><label></label></div>
-		<div id="ledd13" class="fpgaled"><input type="checkbox" id="led13" disabled><label></label></div>
-		<div id="ledd14" class="fpgaled"><input type="checkbox" id="led14" disabled><label></label></div>
+		<div class="container"></br></div>
 		<div id="ledd15" class="fpgaled"><input type="checkbox" id="led15" disabled><label></label></div>
+		<div id="ledd14" class="fpgaled"><input type="checkbox" id="led14" disabled><label></label></div>
+		<div id="ledd13" class="fpgaled"><input type="checkbox" id="led13" disabled><label></label></div>
+		<div id="ledd12" class="fpgaled"><input type="checkbox" id="led12" disabled><label></label></div>
+		<div id="ledd11" class="fpgaled"><input type="checkbox" id="led11" disabled><label></label></div>
+		<div id="ledd10" class="fpgaled"><input type="checkbox" id="led10" disabled><label></label></div>
+		<div id="ledd9"  class="fpgaled"><input type="checkbox" id="led9" disabled><label></label></div>
+		<div id="ledd8"  class="fpgaled"><input type="checkbox" id="led8" disabled><label></label></div>
+		<div id="ledd7"  class="fpgaled"><input type="checkbox" id="led7" disabled><label></label></div>
+		<div id="ledd6"  class="fpgaled"><input type="checkbox" id="led6" disabled><label></label></div>
+		<div id="ledd5"  class="fpgaled"><input type="checkbox" id="led5" disabled><label></label></div>
+		<div id="ledd4"  class="fpgaled"><input type="checkbox" id="led4" disabled><label></label></div>
+		<div id="ledd3"  class="fpgaled"><input type="checkbox" id="led3" disabled><label></label></div>
+		<div id="ledd2"  class="fpgaled"><input type="checkbox" id="led2" disabled><label></label></div>
+		<div id="ledd1"  class="fpgaled"><input type="checkbox" id="led1" disabled><label></label></div>
+		<div id="ledd0"  class="fpgaled"><input type="checkbox" id="led0" disabled><label></label></div>
 	</div>
 	<div class="container module">
-		<div id="swd0"  class="fpgaswitch"><input type="checkbox" id="sw0" /><label></label></div>
-		<div id="swd1"  class="fpgaswitch"><input type="checkbox" id="sw1" /><label></label></div>
-		<div id="swd2"  class="fpgaswitch"><input type="checkbox" id="sw2" /><label></label></div>
-		<div id="swd3"  class="fpgaswitch"><input type="checkbox" id="sw3" /><label></label></div>
-		<div id="swd4"  class="fpgaswitch"><input type="checkbox" id="sw4" /><label></label></div>
-		<div id="swd5"  class="fpgaswitch"><input type="checkbox" id="sw5" /><label></label></div>
-		<div id="swd6"  class="fpgaswitch"><input type="checkbox" id="sw6" /><label></label></div>
-		<div id="swd7"  class="fpgaswitch"><input type="checkbox" id="sw7" /><label></label></div>
-		<div id="swd8"  class="fpgaswitch"><input type="checkbox" id="sw8" /><label></label></div>
-		<div id="swd9"  class="fpgaswitch"><input type="checkbox" id="sw9" /><label></label></div>
-		<div id="swd10" class="fpgaswitch"><input type="checkbox" id="sw10" /><label></label></div>
-		<div id="swd11" class="fpgaswitch"><input type="checkbox" id="sw11" /><label></label></div>
-		<div id="swd12" class="fpgaswitch"><input type="checkbox" id="sw12" /><label></label></div>
-		<div id="swd13" class="fpgaswitch"><input type="checkbox" id="sw13" /><label></label></div>
-		<div id="swd14" class="fpgaswitch"><input type="checkbox" id="sw14" /><label></label></div>
+		<div class="container"></br></div>
 		<div id="swd15" class="fpgaswitch"><input type="checkbox" id="sw15" /><label></label></div>
+		<div id="swd14" class="fpgaswitch"><input type="checkbox" id="sw14" /><label></label></div>
+		<div id="swd13" class="fpgaswitch"><input type="checkbox" id="sw13" /><label></label></div>
+		<div id="swd12" class="fpgaswitch"><input type="checkbox" id="sw12" /><label></label></div>
+		<div id="swd11" class="fpgaswitch"><input type="checkbox" id="sw11" /><label></label></div>
+		<div id="swd10" class="fpgaswitch"><input type="checkbox" id="sw10" /><label></label></div>
+		<div id="swd9"  class="fpgaswitch"><input type="checkbox" id="sw9" /><label></label></div>
+		<div id="swd8"  class="fpgaswitch"><input type="checkbox" id="sw8" /><label></label></div>
+		<div id="swd7"  class="fpgaswitch"><input type="checkbox" id="sw7" /><label></label></div>
+		<div id="swd6"  class="fpgaswitch"><input type="checkbox" id="sw6" /><label></label></div>
+		<div id="swd5"  class="fpgaswitch"><input type="checkbox" id="sw5" /><label></label></div>
+		<div id="swd4"  class="fpgaswitch"><input type="checkbox" id="sw4" /><label></label></div>
+		<div id="swd3"  class="fpgaswitch"><input type="checkbox" id="sw3" /><label></label></div>
+		<div id="swd2"  class="fpgaswitch"><input type="checkbox" id="sw2" /><label></label></div>
+		<div id="swd1"  class="fpgaswitch"><input type="checkbox" id="sw1" /><label></label></div>
+		<div id="swd0"  class="fpgaswitch"><input type="checkbox" id="sw0" /><label></label></div>
 	</div>
-	<div class="container">
-		<div class="xterm" id="xterm0"></div>
-		<div class="xterm" id="xterm1"></div>
-		<div class="xterm" id="xterm2"></div>
-		<div class="xterm" id="xterm3"></div>
+	<div class="container module">
+		<div class="row">
+			<div class="col colmodule" id="hexplay0">
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay0_span0">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay0_span1">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay0_span2">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay0_span3">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay0_span4">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay0_span5">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay0_span6">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay0_span7">0</p>
+				</div>
+			</div>
+			<div class="col colmodule" id="hexplay1">
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay1_span0">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay1_span1">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay1_span2">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay1_span3">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay1_span4">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay1_span5">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay1_span6">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay1_span7">0</p>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col colmodule" id="hexplay2">
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay2_span0">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay2_span1">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay2_span2">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay2_span3">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay2_span4">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay2_span5">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay2_span6">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay2_span7">0</p>
+				</div>
+			</div>
+			<div class="col colmodule" id="hexplay3">
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay3_span0">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay3_span1">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay3_span2">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay3_span3">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay3_span4">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay3_span5">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay3_span6">&nbsp;</p>
+				</div>
+				<div class="hexplay_out" align="center">
+					<p class="hexplay_span" id="hexplay3_span7">0</p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="container module">
+		<div class="container"></br></div>
+		<div class="row">
+			<div class="col-6 xterm" id="xterm0"></div>
+			<div class="col-6 xterm" id="xterm1"></div>
+		</div>
+		<div class="container"></br></div>
+		<div class="row">
+			<div class="col-6 xterm" id="xterm2"></div>
+			<div class="col-6 xterm" id="xterm3"></div>
+		</div>
 	</div>
 	<div class="container module">
 		<h4>FPGA interface</h4>
