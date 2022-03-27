@@ -83,13 +83,12 @@ class UART : public Periph
 	int baudrate;
 	int serport;
 	public:
-		//int on_notify(QString msg) { return 0; }
 		UART(int type, int idx, bool needpoll, int pincnt, int pins[], int baud) :
 			Periph(type, idx, needpoll, pincnt, pins) {
 				baudrate = baud;
 				char serstr[20] = "/dev/serial0";
 				serstr[11] += idx;
-				serport = serOpen(serstr, baudrate, NULL);
+				serport = serOpen(serstr, baudrate, 0);
 			}
 		~UART() {
 			serClose(serport);
@@ -121,5 +120,51 @@ class UART : public Periph
 };
 
 #define HEXPLAY_ID 1004
+class HEXPLAY : public Periph
+{
+	// idx -- /dev/serialX
+	private:
+	uint32_t number;
+	uint32_t cooldown;
+	uint32_t report;
+	// pins[]: an{0,1,2}, d{0,1,2,3}
+	public:
+		HEXPLAY(int type, int idx, bool needpoll, int pincnt, int pins[]) :
+			Periph(type, idx, needpoll, pincnt, pins) {
+				number = 0;
+				cooldown = 0;
+				report = 0;
+			}
+		virtual int poll() override {
+			uint32_t newnumber;
+			int an = 0;
+			int d = 0;
+			for (int i = 0; i <= 2; i++)
+				an = (an << 2) + gpioRead(pins[2-i]) ? 1 : 0;
+			an = an % 8; // just in case... of nothing
+			for (int i = 0; i <= 3; i++)
+				d = (d << 2) + gpioRead(pins[3-i]) ? 1 : 0;
+			d = d % 16;
+			newnumber = (number & ~(0xf << (an*4))) | (d << (an*4));
+			if (newnumber != number) {
+				number = newnumber;
+				report = 1;
+			}
+			if (cooldown) cooldown--;
+			if (report && cooldown == 0) {
+				cooldown = 100; // avoid flooding frontend
+				report = 0;
+				QJsonObject json;
+				QString s = QString::number(number);
+				json["type"] = "HEXPLAY";
+				json["idx"] = idx;
+				json["payload"] = s;
+				auto msg = QJsonDocument(json).toJson(QJsonDocument::Compact);
+				fpga_instance->call_send_fpga_msg(msg);
+				std::cout << "HEXPLAY CHANGE" << std::endl;
+			}
+			return 0;
+		};
+};
 
 #endif /* PERIPHERALS_H */

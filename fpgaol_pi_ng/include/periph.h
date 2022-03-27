@@ -37,7 +37,7 @@ class Periph
 		// poll peripherals, currently no interrupt
 		// should return fast
 		// return: 0 nothing or already handled, none-zero need attention
-		virtual int poll() {};
+		virtual int poll() { return 0; };
 		// callback of the signal notify(e.g. write value in msg to hw)
 		// nobody prevent putting a send_msg call in this -- so 
 		// sending a notifiction back is OK

@@ -32,14 +32,17 @@ std::map<int, int> pincnt_map = {
 	{LED_ID, 1},
 	{BTN_ID, 1},
 	{UART_ID, 0}, // specially allocated
-	{HEXPLAY_ID, 8}
+	{HEXPLAY_ID, 7}
 };
 
-// why int? again we want to do sth with it later...
+// 0 -- no poll
+// 1 -- slow poll
+// 2 -- fast poll
+// TODO: use this
 std::map<int, int> needpoll_map = {
 	{LED_ID, 1},
 	{BTN_ID, 0},
 	{UART_ID, 1},
-	{HEXPLAY_ID, 1}
+	{HEXPLAY_ID, 2}
 };
 

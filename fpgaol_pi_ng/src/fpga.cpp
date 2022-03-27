@@ -166,10 +166,10 @@ uint64_t GPIO_MASK;
 static void slow_mon_thread()
 {
 	uint32_t fastpoll_ms = 5;
-	uint32_t slowpoll_rate = 20;
-	uint32_t sslowpoll_rate = 200;
+	uint32_t slowpoll_rate = 5;
+	//uint32_t sslowpoll_rate = 200;
 	uint32_t slow_cnt = 0;
-	uint32_t sslow_cnt = 0;
+	//uint32_t sslow_cnt = 0;
 
 	//uint64_t count[goutputn][16];
 	//uint64_t output;
@@ -194,6 +194,14 @@ static void slow_mon_thread()
 		//sslow_cnt++;
 		//qDebug() << "LOOP";
 		// fast poll, like 7-seg display
+		int hexplay_id = periphstr2id_map.find("HEXPLAY")->second;
+		std::vector<Periph*>& v = periph_arr.find(hexplay_id)->second;
+		for(int i = 0; i < (int)v.size(); i++) {
+			Periph* p = v[i];
+			HEXPLAY* q = static_cast<HEXPLAY*>(p);
+			q->poll();
+		}
+
 
 		// slow poll, like LED
 		if (slow_cnt == slowpoll_rate) {
@@ -201,7 +209,7 @@ static void slow_mon_thread()
 			//qDebug() << "SLOWPOLL";
 			int led_id = periphstr2id_map.find("LED")->second;
 			std::vector<Periph*>& v = periph_arr.find(led_id)->second;
-			for(int i = 0; i < v.size(); i++) {
+			for(int i = 0; i < (int)v.size(); i++) {
 				Periph* p = v[i];
 				LED* q = static_cast<LED*>(p);
 				q->poll();
@@ -209,7 +217,7 @@ static void slow_mon_thread()
 
 			int uart_id = periphstr2id_map.find("UART")->second;
 			v = periph_arr.find(uart_id)->second;
-			for(int i = 0; i < v.size(); i++) {
+			for(int i = 0; i < (int)v.size(); i++) {
 				Periph* p = v[i];
 				UART* q = static_cast<UART*>(p);
 				q->poll();
@@ -436,6 +444,13 @@ int FPGA::start_notify(QString msg)
 			if (!p_baud) p_baud = 115200;
 			vec.push_back(new UART(p_id, p_idx, p_needpoll, p_pincnt, p_pin_arr, p_baud));
 			
+		} else if (p_id == HEXPLAY_ID) {
+			std::cout << "HEXPLAY " << p_idx;
+			for (int j = 0; j <= 2; j++)
+				xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_pin_arr[j]] << " IOSTANDARD LVCMOS33} [get_ports {hexplay" << p_idx << "_an[" << j << "]}];" << std::endl;
+			for (int j = 0; j <= 3; j++)
+				xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_pin_arr[3+j]] << " IOSTANDARD LVCMOS33} [get_ports {hexplay" << p_idx << "_d[" << j << "]}];" << std::endl;
+			vec.push_back(new HEXPLAY(p_id, p_idx, p_needpoll, p_pincnt, p_pin_arr));
 		} else {
 			// periphs can be unsupported, but its information
 			// must be still in code
@@ -597,16 +612,16 @@ void FPGA::call_send_fpga_msg(QString msg)
 	//qDebug() << "WARNING: writing GPIO into undefined place";
 //}
 
-int FPGA::write_serial(QByteArray msg)
-{
-	if (!notifying)
-		return -1;
+//int FPGA::write_serial(QByteArray msg)
+//{
+	//if (!notifying)
+		//return -1;
 
-	mx.lock();
-	int status = serWrite(serial_port, (char *)msg.toStdString().data(), msg.toStdString().length());
-	mx.unlock();
-	return status;
-}
+	//mx.lock();
+	//int status = serWrite(serial_port, (char *)msg.toStdString().data(), msg.toStdString().length());
+	//mx.unlock();
+	//return status;
+//}
 
 //int FPGA::set_soft_clock(int freq_hz)
 //{
