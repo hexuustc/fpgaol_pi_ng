@@ -44,13 +44,15 @@ class Gpio
 		// everything just got deleted after connection ended
 };
 
-#define IO_MAX 46
+#define IO_MAX 39
 extern std::vector<Gpio> gpio_arr;
 
 extern std::string pi2_io2fpin[100];
 
 extern int BOARD_TYPE;
 extern int GPIOLIB_TYPE;
+
+extern bool gpio_read_result[100];
 
 void platform_dependent_gpio_init();
 void platform_dependent_gpio_fini();

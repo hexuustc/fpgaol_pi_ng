@@ -68,7 +68,7 @@ public slots:
 
 	// Write to the serial
 	// Returns: Number of bytes written
-	int write_serial(QByteArray msg);
+	//int write_serial(QByteArray msg);
 
 	// Set soft clock at certain frequecy, will use `gpioWaveTxSend`
 	// Returns: 0 if successful

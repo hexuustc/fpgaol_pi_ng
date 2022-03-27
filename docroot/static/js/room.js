@@ -80,13 +80,15 @@ $(document).ready(function () {
         var idx = data['idx'];
 		var payload = data['payload'];
 		if (type == 'LED') {
+			console.log("LED MSG", idx, payload);
 			$("#led" + idx).prop({'checked': payload ? true : false});
 		} else if (type == 'UART') {
 			term[idx].write(payload);
 		} else if (type == 'HEXPLAY') {
-			setHEXPLAY(idx, payload);
+			console.log("HEXPLAY", idx, payload);
+			payload = parseInt(payload);
 			for (var i = 0; i < 8; ++i) {
-				$("#hexplay" + idx + "_span" + i).html(payload == -1 ? '&nbsp;' : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'b', 'C', 'd', 'E', 'F'][(payload >> 4*(7-i)) % 0x10]);
+				$("#hexplay" + idx + "_span" + i).html(payload == -1 ? '&nbsp;' : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'b', 'C', 'd', 'E', 'F'][(payload >>> 4*(7-i)) % 0x10]);
 			}
 		} else if (type == 'WF') {
 			document.getElementById("download").innerHTML = "Download";
@@ -252,7 +254,7 @@ $(document).ready(function () {
 		term[i].write('>' + i + '< ' + term_banner);
 		term[i].onData(
 			function (val) {
-				term[i].write(val);
+				//term[i].write(val);
 				sendJson(JSON.stringify({
 					'id': -3,
 					'type': 'UART',

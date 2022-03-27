@@ -10,6 +10,8 @@
 
 #include "fpga.h"
 #include "periph.h"
+#include <iostream>
+#include <string>
 
 #define MAX_PERIPH_COUNT 100
 #define MAX_KIND_OF_PERIPH 100
@@ -21,6 +23,8 @@ extern std::map<int, int> pincnt_map;
 extern std::map<int, int> needpoll_map;
 
 extern FPGA* fpga_instance;
+
+extern bool gpio_read_result[100];
 
 #define DUMMY_ID 1000
 
@@ -45,8 +49,9 @@ class LED : public Periph
 			fpga_instance->call_send_fpga_msg(msg);
 		}
 		virtual int poll() override {
-			int curlight = gpioRead(pins[0]);
 			//qDebug() << "Poll LED";
+			int curlight = gpio_read_result[pins[0]];
+			//std::cout << pins[0] << std::endl;
 			if (curlight != light) {
 				light = curlight;
 				send_msg();
@@ -69,6 +74,7 @@ class BTN : public Periph
 		virtual int on_notify(QString msg) override {
 			auto json = QJsonDocument::fromJson(msg.toUtf8());
 			int onoff = (int)json["payload"].toBool();
+			// RPi is incapable of high speed GPIO, so direct write here...
 			gpioWrite(pins[0], onoff);
 			//std::cout << "BTN" << " " << pins[0] << " " <<  idx << " " << onoff << std::endl;
 			return 0;
@@ -89,6 +95,7 @@ class UART : public Periph
 				char serstr[20] = "/dev/serial0";
 				serstr[11] += idx;
 				serport = serOpen(serstr, baudrate, 0);
+				std::cout << "UART: " << serport << std::endl;
 			}
 		~UART() {
 			serClose(serport);
@@ -102,10 +109,11 @@ class UART : public Periph
 			return 0;
 		}
 		virtual int poll() override {
+			//std::cout << "UART POLL" << std::endl;
 			char data[1000];
 			int available_data = serDataAvailable(serport);
 			if (available_data) {
-				serRead(serport, data, available_data);
+				serRead(serport, data, std::min(available_data, 999));
 				data[available_data] = '\0';
 				QJsonObject json;
 				json["type"] = "UART";
@@ -113,7 +121,8 @@ class UART : public Periph
 				json["payload"] = QString(data);
 				auto msg = QJsonDocument(json).toJson(QJsonDocument::Compact);
 				fpga_instance->call_send_fpga_msg(msg);
-				std::cout << "UART OUT" << std::endl;
+				// sometimes we receive tons of garbage, don't know why..
+				//std::cout << "UART OUT" << std::endl;
 			}
 			return 0;
 		};
@@ -140,11 +149,12 @@ class HEXPLAY : public Periph
 			int an = 0;
 			int d = 0;
 			for (int i = 0; i <= 2; i++)
-				an = (an << 2) + gpioRead(pins[2-i]) ? 1 : 0;
-			an = an % 8; // just in case... of nothing
+				an = (an << 1) + (gpio_read_result[pins[2-i]] ? 1 : 0);
+			//an = an % 8; // just in case... of nothing
 			for (int i = 0; i <= 3; i++)
-				d = (d << 2) + gpioRead(pins[3-i]) ? 1 : 0;
-			d = d % 16;
+				d = (d << 1) + (gpio_read_result[pins[6-i]] ? 1 : 0);
+			//d = d % 16;
+			//std::cout << idx << ": " << an << " " << d << std::endl;
 			newnumber = (number & ~(0xf << (an*4))) | (d << (an*4));
 			if (newnumber != number) {
 				number = newnumber;
@@ -152,7 +162,7 @@ class HEXPLAY : public Periph
 			}
 			if (cooldown) cooldown--;
 			if (report && cooldown == 0) {
-				cooldown = 100; // avoid flooding frontend
+				cooldown = 20; // avoid flooding frontend
 				report = 0;
 				QJsonObject json;
 				QString s = QString::number(number);
@@ -161,7 +171,7 @@ class HEXPLAY : public Periph
 				json["payload"] = s;
 				auto msg = QJsonDocument(json).toJson(QJsonDocument::Compact);
 				fpga_instance->call_send_fpga_msg(msg);
-				std::cout << "HEXPLAY CHANGE" << std::endl;
+				//std::cout << "HEXPLAY CHANGE" << std::endl;
 			}
 			return 0;
 		};

@@ -1,7 +1,7 @@
 #include "fpga.h"
 #include "peripherals.h"
 #include "io_defs_hal.h"
-#include<iostream>
+#include <iostream>
 #include <sstream>
 
 #define WF_FILENAME "/home/pi/docroot/waveform.vcd"
@@ -22,6 +22,8 @@ static bool debugging;
 static bool notifying = false;
 FPGA *fpga_instance = nullptr;
 QMutex mx;
+
+extern bool gpio_read_result[100];
 
 /*
  * This watchdog wave is used to wake up the monitor thread
@@ -166,7 +168,7 @@ uint64_t GPIO_MASK;
 static void slow_mon_thread()
 {
 	uint32_t fastpoll_ms = 5;
-	uint32_t slowpoll_rate = 5;
+	uint32_t slowpoll_rate = 20;
 	//uint32_t sslowpoll_rate = 200;
 	uint32_t slow_cnt = 0;
 	//uint32_t sslow_cnt = 0;
@@ -190,9 +192,16 @@ static void slow_mon_thread()
 	qInfo() << "Monitor thread started\n";
 	while (1)
 	{
+		uint32_t iol = gpioRead_Bits_0_31();
+		uint32_t ioh = gpioRead_Bits_32_53();
+		for (int i = 0; i < 32; i++)
+			gpio_read_result[i] = (iol >> i) % 2;
+		for (int i = 0; i < 32; i++)
+			gpio_read_result[32+i] = (ioh >> i) % 2;
 		slow_cnt++;
 		//sslow_cnt++;
 		//qDebug() << "LOOP";
+
 		// fast poll, like 7-seg display
 		int hexplay_id = periphstr2id_map.find("HEXPLAY")->second;
 		std::vector<Periph*>& v = periph_arr.find(hexplay_id)->second;
@@ -208,17 +217,17 @@ static void slow_mon_thread()
 			slow_cnt = 0;
 			//qDebug() << "SLOWPOLL";
 			int led_id = periphstr2id_map.find("LED")->second;
-			std::vector<Periph*>& v = periph_arr.find(led_id)->second;
-			for(int i = 0; i < (int)v.size(); i++) {
-				Periph* p = v[i];
+			std::vector<Periph*>& v1 = periph_arr.find(led_id)->second;
+			for(int i = 0; i < (int)v1.size(); i++) {
+				Periph* p = v1[i];
 				LED* q = static_cast<LED*>(p);
 				q->poll();
 			}
 
 			int uart_id = periphstr2id_map.find("UART")->second;
-			v = periph_arr.find(uart_id)->second;
-			for(int i = 0; i < (int)v.size(); i++) {
-				Periph* p = v[i];
+			std::vector<Periph*>& v2 = periph_arr.find(uart_id)->second;
+			for(int i = 0; i < (int)v2.size(); i++) {
+				Periph* p = v2[i];
 				UART* q = static_cast<UART*>(p);
 				q->poll();
 			}
@@ -228,8 +237,10 @@ static void slow_mon_thread()
 
 		gpioDelay(fastpoll_ms * 1000);
 
-		if (!notifying)
+		if (!notifying) {
+			qDebug() << "Monitor thread return";
 			return;
+		}
 
 		//memcpy(count, (void *)num_count, sizeof(count));
 
@@ -417,7 +428,17 @@ int FPGA::start_notify(QString msg)
 		// just avoid UART/SPI pins
 		// we have a lot to waste
 		for (int i = 0; i < p_pincnt; i++) {
-			if (gpio_arr[i].special) {
+			if (pipin_cnt >= IO_MAX) {
+				qDebug() << "ERR: too many pins!";
+				j_reply["id"] = 0;
+				j_reply["type"] = "XDC";
+				j_reply["payload"] = "# no enough pins! please reduce peripheral count";
+				msgback = QJsonDocument(j_reply).toJson(QJsonDocument::Compact);
+				fpga_instance->call_send_fpga_msg(msgback);
+				goto fail;
+			}
+			if (gpio_arr[pipin_cnt].special) {
+				std::cout << "Skip special pin" << std::endl;
 				i--;
 				pipin_cnt++;
 			}
@@ -438,6 +459,11 @@ int FPGA::start_notify(QString msg)
 			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_pin_arr[0]] << " IOSTANDARD LVCMOS33} [get_ports {sw[" << p_idx << "]}];" << std::endl;
 		} else if (p_id == UART_ID) {
 			std::cout << "UART " << p_idx;
+			if (p_idx != 0) {
+				qDebug() << "Only one UART is available!";
+				goto fail;
+			}
+			// the second serial just fails
 			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_idx == 0 ?14:32] << " IOSTANDARD LVCMOS33} [get_ports {uart_rx" << p_idx << "}];" << std::endl;
 			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_idx == 0 ?15:33] << " IOSTANDARD LVCMOS33} [get_ports {uart_tx" << p_idx << "}];" << std::endl;
 			int p_baud = entry.toObject().value("baud").toInt();
@@ -446,6 +472,8 @@ int FPGA::start_notify(QString msg)
 			
 		} else if (p_id == HEXPLAY_ID) {
 			std::cout << "HEXPLAY " << p_idx;
+			for (int j = 0; j <= 6; j++)
+				gpioSetMode(p_pin_arr[j], PI_INPUT);
 			for (int j = 0; j <= 2; j++)
 				xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_pin_arr[j]] << " IOSTANDARD LVCMOS33} [get_ports {hexplay" << p_idx << "_an[" << j << "]}];" << std::endl;
 			for (int j = 0; j <= 3; j++)
@@ -505,13 +533,14 @@ int FPGA::start_notify(QString msg)
 	//if (m_debug)
 		//qDebug() << "SerialOpen returned: " << serial_port;
 
+	qInfo() << "Notify started";
+	notifying = true;
+	std::cout << "Started" << std::endl;
+
 	// slow monitor threads -- for slow tasks
 	monitor_thrd = std::thread(slow_mon_thread);
 	//uart_thrd = std::thread(uart_fn, serial_port);
 
-	qInfo() << "Notify started";
-	notifying = true;
-	std::cout << "Started" << std::endl;
 
 	// everything OK, generate a XDC constraint file 
 	// and send back to frontend

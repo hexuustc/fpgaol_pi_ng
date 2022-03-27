@@ -3,6 +3,8 @@
 
 std::vector<Gpio> gpio_arr;
 
+bool gpio_read_result[100];
+
 // 14, 15 for UART0
 // 32, 33 for UART1
 // 7, 9, 10, 11 for SPI
@@ -30,10 +32,10 @@ void platform_dependent_gpio_init()
 	gpio_arr[15].special = true;
 	gpio_arr[32].special = true;
 	gpio_arr[33].special = true;
-	gpio_arr[7].special = true;
-	gpio_arr[9].special = true;
-	gpio_arr[10].special = true;
-	gpio_arr[11].special = true;
+	//gpio_arr[7].special = true;
+	//gpio_arr[9].special = true;
+	//gpio_arr[10].special = true;
+	//gpio_arr[11].special = true;
 }
 
 void platform_dependent_gpio_fini()
