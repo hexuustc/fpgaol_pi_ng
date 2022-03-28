@@ -80,12 +80,12 @@ $(document).ready(function () {
         var idx = data['idx'];
 		var payload = data['payload'];
 		if (type == 'LED') {
-			console.log("LED MSG", idx, payload);
+			//console.log("LED MSG", idx, payload);
 			$("#led" + idx).prop({'checked': payload ? true : false});
 		} else if (type == 'UART') {
 			term[idx].write(payload);
 		} else if (type == 'HEXPLAY') {
-			console.log("HEXPLAY", idx, payload);
+			//console.log("HEXPLAY", idx, payload);
 			payload = parseInt(payload);
 			for (var i = 0; i < 8; ++i) {
 				$("#hexplay" + idx + "_span" + i).html(payload == -1 ? '&nbsp;' : ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'b', 'C', 'd', 'E', 'F'][(payload >>> 4*(7-i)) % 0x10]);
@@ -162,6 +162,7 @@ $(document).ready(function () {
 		}, 1000);
 	});
 	$("#copy-xdc").click(function () {
+		document.execCommand('copy', false, document.getElementById('xdc-output').select());
 	});
 
     //for (var i = 0; i < 8; ++i) {
@@ -335,7 +336,7 @@ function prepare_periph() {
 	var periphs = data['periphs'];
 	for(var i = 0; i < periphs.length; i++) {
 		var p = periphs[i];
-		console.log(p.type, p.idx);
+		//console.log(p.type, p.idx);
 		if (p.type == 'LED') {
 			$("#ledd" + p.idx).removeClass('d-none');
 			//

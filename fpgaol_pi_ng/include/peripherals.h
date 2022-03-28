@@ -122,7 +122,7 @@ class UART : public Periph
 				auto msg = QJsonDocument(json).toJson(QJsonDocument::Compact);
 				fpga_instance->call_send_fpga_msg(msg);
 				// sometimes we receive tons of garbage, don't know why..
-				//std::cout << "UART OUT" << std::endl;
+				std::cout << "UART OUT" << std::endl;
 			}
 			return 0;
 		};

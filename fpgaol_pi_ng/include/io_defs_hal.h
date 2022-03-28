@@ -44,7 +44,7 @@ class Gpio
 		// everything just got deleted after connection ended
 };
 
-#define IO_MAX 39
+#define IO_MAX 46
 extern std::vector<Gpio> gpio_arr;
 
 extern std::string pi2_io2fpin[100];

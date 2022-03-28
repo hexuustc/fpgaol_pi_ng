@@ -459,13 +459,13 @@ int FPGA::start_notify(QString msg)
 			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_pin_arr[0]] << " IOSTANDARD LVCMOS33} [get_ports {sw[" << p_idx << "]}];" << std::endl;
 		} else if (p_id == UART_ID) {
 			std::cout << "UART " << p_idx;
-			if (p_idx != 0) {
-				qDebug() << "Only one UART is available!";
-				goto fail;
+			if (p_idx > 0) {
+				qDebug() << "Only two UART is available!";
+				continue;
 			}
 			// the second serial just fails
-			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_idx == 0 ?14:32] << " IOSTANDARD LVCMOS33} [get_ports {uart_rx" << p_idx << "}];" << std::endl;
-			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_idx == 0 ?15:33] << " IOSTANDARD LVCMOS33} [get_ports {uart_tx" << p_idx << "}];" << std::endl;
+			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_idx == 0 ?14:40] << " IOSTANDARD LVCMOS33} [get_ports {uart_rx" << p_idx << "}];" << std::endl;
+			xdc_ss << "set_property -dict {PACKAGE_PIN " << pi2_io2fpin[p_idx == 0 ?15:41] << " IOSTANDARD LVCMOS33} [get_ports {uart_tx" << p_idx << "}];" << std::endl;
 			int p_baud = entry.toObject().value("baud").toInt();
 			if (!p_baud) p_baud = 115200;
 			vec.push_back(new UART(p_id, p_idx, p_needpoll, p_pincnt, p_pin_arr, p_baud));
